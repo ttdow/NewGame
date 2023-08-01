@@ -160,12 +160,36 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="inc\glm\detail\glm.cpp" />
-    <ClCompile Include="src\Camera.cpp" />
-    <ClCompile Include="src\glad.c" />
+    <ClCompile Include="src\ecs\Entity.cpp" />
+    <ClCompile Include="src\ecs\Transform.cpp" />
+    <ClCompile Include="src\game\GameManager.cpp" />
+    <ClCompile Include="src\game\Player.cpp" />
+    <ClCompile Include="src\game\states\GameState.cpp" />
+    <ClCompile Include="src\game\RaceManager.cpp" />
+    <ClCompile Include="src\game\StateManager.cpp" />
+    <ClCompile Include="src\game\states\RaceStartState.cpp" />
+    <ClCompile Include="src\game\states\RaceTurnState.cpp" />
+    <ClCompile Include="src\game\TurnManager.cpp" />
+    <ClCompile Include="src\input\InputSystem.cpp" />
+    <ClCompile Include="src\phys\PhysicsSystem.cpp" />
+    <ClCompile Include="src\render\Animation.cpp" />
+    <ClCompile Include="src\render\Bone.cpp" />
+    <ClCompile Include="src\render\Camera.cpp" />
+    <ClCompile Include="inc\glad\glad.c" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Mesh.cpp" />
-    <ClCompile Include="src\Model.cpp" />
-    <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\render\CubeVertices.cpp" />
+    <ClCompile Include="src\render\EBO.cpp" />
+    <ClCompile Include="src\render\Mesh.cpp" />
+    <ClCompile Include="src\render\MeshRenderer.cpp" />
+    <ClCompile Include="src\render\Model.cpp" />
+    <ClCompile Include="src\render\RenderingSystem.cpp" />
+    <ClCompile Include="src\render\Shader.cpp" />
+    <ClCompile Include="src\render\VAO.cpp" />
+    <ClCompile Include="src\render\VBO.cpp" />
+    <ClCompile Include="src\ui\EventSystem.cpp" />
+    <ClCompile Include="src\util\Profiler.cpp" />
+    <ClCompile Include="src\util\Time.cpp" />
+    <ClCompile Include="src\util\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\assimp\assimp-vc142-mtd.lib" />
@@ -320,7 +344,10 @@
     <None Include="inc\glm\gtx\wrap.inl" />
     <None Include="lib\assimp\assimp-vc142-mtd.exp" />
     <None Include="lib\glfw\glfw3.pdb" />
+    <None Include="res\obj\animcube.fbx" />
     <None Include="res\obj\backpack.mtl" />
+    <None Include="res\shaders\anim.fs" />
+    <None Include="res\shaders\anim.vs" />
     <None Include="res\shaders\colors.fs" />
     <None Include="res\shaders\colors.vs" />
     <None Include="res\shaders\fragment.shader" />
@@ -334,6 +361,8 @@
     <None Include="res\shaders\model_loading.vs" />
     <None Include="res\shaders\multiple_lights.fs" />
     <None Include="res\shaders\multiple_lights.vs" />
+    <None Include="res\shaders\standard.fs" />
+    <None Include="res\shaders\standard.vs" />
     <None Include="res\shaders\vertex.shader" />
   </ItemGroup>
   <ItemGroup>
@@ -706,12 +735,38 @@
     <ClInclude Include="inc\glm\vec4.hpp" />
     <ClInclude Include="inc\glm\vector_relational.hpp" />
     <ClInclude Include="inc\KHR\khrplatform.h" />
-    <ClInclude Include="src\Camera.h" />
-    <ClInclude Include="src\ComponentManager.h" />
-    <ClInclude Include="src\Mesh.h" />
-    <ClInclude Include="src\Model.h" />
-    <ClInclude Include="src\Shader.h" />
-    <ClInclude Include="src\stb_image.h" />
+    <ClInclude Include="src\ecs\Component.h" />
+    <ClInclude Include="src\ecs\Entity.h" />
+    <ClInclude Include="src\ecs\Transform.h" />
+    <ClInclude Include="src\game\GameManager.h" />
+    <ClInclude Include="src\game\Player.h" />
+    <ClInclude Include="src\game\states\GameState.h" />
+    <ClInclude Include="src\game\RaceManager.h" />
+    <ClInclude Include="src\game\StateManager.h" />
+    <ClInclude Include="src\game\states\RaceStartState.h" />
+    <ClInclude Include="src\game\states\RaceTurnState.h" />
+    <ClInclude Include="src\game\TurnManager.h" />
+    <ClInclude Include="src\input\InputSystem.h" />
+    <ClInclude Include="src\phys\PhysicsSystem.h" />
+    <ClInclude Include="src\render\Animation.h" />
+    <ClInclude Include="src\render\Bone.h" />
+    <ClInclude Include="src\render\Camera.h" />
+    <ClInclude Include="src\ecs\ComponentManager.h" />
+    <ClInclude Include="src\render\EBO.h" />
+    <ClInclude Include="src\render\MeshRenderer.h" />
+    <ClInclude Include="src\render\VBO.h" />
+    <ClInclude Include="src\render\Mesh.h" />
+    <ClInclude Include="src\render\Model.h" />
+    <ClInclude Include="src\render\CubeVertices.h" />
+    <ClInclude Include="src\render\RenderingSystem.h" />
+    <ClInclude Include="src\render\Shader.h" />
+    <ClInclude Include="src\render\stb_image.h" />
+    <ClInclude Include="src\render\VAO.h" />
+    <ClInclude Include="src\render\Vertex.h" />
+    <ClInclude Include="src\ui\EventSystem.h" />
+    <ClInclude Include="src\util\Profiler.h" />
+    <ClInclude Include="src\util\Time.h" />
+    <ClInclude Include="src\util\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\obj\ao.jpg" />
