@@ -7,6 +7,7 @@
 #include "../util/Window.h"
 #include "../render/Camera.h"
 #include "../util/Time.h"
+#include "PlayerController.h"
 
 class InputSystem
 {
@@ -28,6 +29,8 @@ private:
 	InputSystem& operator=(const InputSystem&) = delete;
 
 public:
+
+	PlayerController* playerController;
 
 	static InputSystem* GetInstance()
 	{

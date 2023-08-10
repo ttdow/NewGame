@@ -64,6 +64,7 @@ void Transform::UpdateQRotation()
 	this->qRotation->x = tempQuat.x;
 	this->qRotation->y = tempQuat.y;
 	this->qRotation->z = tempQuat.z;
+	this->qRotation->w = tempQuat.w;
 }
 
 glm::mat4 Transform::CalculateMatrix()

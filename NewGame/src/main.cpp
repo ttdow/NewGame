@@ -10,6 +10,8 @@
 #include "game/states/RaceTurnState.h"
 #include "game/GameManager.h"
 #include "game/StateManager.h"
+#include "input/PlayerController.h"
+#include "phys/PhysicsSystem.h"
 
 std::vector<glm::vec3> BSpline(std::vector<glm::vec3>& controlPoints)
 {
@@ -113,6 +115,13 @@ int main()
 
 	Time* time = Time::GetInstance();
 
+	PlayerController* playerController = new PlayerController();
+	inputSystem->playerController = playerController;
+
+	PhysicsSystem* physicsSystem = new PhysicsSystem();
+	physicsSystem->SetEnvironmentMesh(renderingSystem->peachCastle);
+	physicsSystem->SetPlayerCharacterTransform(renderingSystem->goblinTransform);
+
 	// ----------------------- EVENT SYSTEM TESTING ---------------------------
 	EventSystem* eventSystem = new EventSystem();
 	GameObject gameObject;
@@ -174,12 +183,14 @@ int main()
 		inputSystem->Update();
 
 		// Physics.
-		// TODO implement physics system.
+		physicsSystem->Update();
 
 		// Render.
 		renderingSystem->Update();
 	}
 
+	delete(physicsSystem);
+	delete(playerController);
 	delete(time);
 	delete(eventSystem);
 	delete(renderingSystem);

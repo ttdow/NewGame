@@ -1,21 +1,16 @@
 #pragma once
 
 #include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "../ecs/Transform.h"
 
 #include <vector>
 #include <iostream>
 
-enum Camera_Movement
-{
-	FORWARD,
-	BACKWARD,
-	LEFT,
-	RIGHT
-};
-
-const float YAW = -90.0f;
+const float YAW = 0.0f;
 const float PITCH = 0.0f;
 const float SPEED = 250.0f;
 const float SENSITIVITY = 0.1f;
@@ -26,27 +21,31 @@ class Camera
 public:
 
 	glm::vec3 position;
+
 	glm::vec3 front;
 	glm::vec3 up;
 	glm::vec3 right;
+
 	glm::vec3 worldUp;
 
-	float yaw;
-	float pitch;
+	float radialDistance;
+	float inclination;
+	float azimuth;
 
-	float movementSpeed;
-	float mouseSensitivity;
 	float zoom;
 
-	Camera(glm::vec3 position, glm::vec3 up, float yaw = YAW, float pitch = PITCH);
-	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
+	bool freeCamera;
+
+	Camera(Transform* playerTransform);
 
 	glm::mat4 GetViewMatrix();
-	void ProcessKeyboard(Camera_Movement direction, float deltaTime);
+	void ProcessKeyboard();
 	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
 	void ProcessMouseScroll(float yoffset);
+	void Update();
+	void Update(float dr, float di, float da);
 
 private:
 
-	void UpdateCameraVectors();
+	Transform* playerTransform;
 };

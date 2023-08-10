@@ -69,9 +69,6 @@
     <ClCompile Include="src\render\Animation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render\Bone.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\ecs\Transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -106,6 +103,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\game\Player.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render\Animator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render\Bone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\anim\AnimationController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\input\PlayerController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\phys\Octree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -570,6 +582,23 @@
     <None Include="res\obj\animcube.fbx" />
     <None Include="res\shaders\anim.vs" />
     <None Include="res\shaders\anim.fs" />
+    <None Include="res\obj\animcube2.fbx" />
+    <None Include="res\obj\ybot2.fbx" />
+    <None Include="res\obj\ybot.fbx" />
+    <None Include="res\obj\Waving.fbx" />
+    <None Include="res\shaders\normal_map.fs" />
+    <None Include="res\shaders\normal_map.vs" />
+    <None Include="res\obj\gobbo.fbx" />
+    <None Include="res\obj\gobbo2.fbx" />
+    <None Include="res\obj\walk.fbx" />
+    <None Include="res\obj\gobbo_walk.fbx" />
+    <None Include="res\obj\gobbo_idle.fbx" />
+    <None Include="res\obj\gobbo_attack.fbx" />
+    <None Include="res\obj\vault_boy.mtl" />
+    <None Include="res\shaders\skybox.vs" />
+    <None Include="res\shaders\skybox.fs" />
+    <None Include="res\shaders\blending.vs" />
+    <None Include="res\shaders\blending.fs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\glad\glad.h">
@@ -1775,6 +1804,27 @@
     <ClInclude Include="src\game\Player.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\render\Animator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\anim\AnimationController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\input\PlayerController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\phys\Octree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\phys\Ray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\phys\Triangle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\phys\OctreeNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\container.jpg">
@@ -1802,6 +1852,24 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\obj\specular.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\Ybot.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\brickwall_normal.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\brickwall.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\gobbo.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\obj\vault_boy.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\obj\vault_boy.jpg">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

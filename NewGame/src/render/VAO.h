@@ -20,8 +20,5 @@ public:
 
 	VAO();
 	void Bind();
-	void SetUp();
-	//void AddPositionData();
-	//void AddNormalData();
-	//void AddTextureData();
+	void Setup();
 };

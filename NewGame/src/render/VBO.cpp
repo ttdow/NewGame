@@ -20,12 +20,3 @@ void VBO::AddVertexData(std::vector<Vertex>& vertices)
 	// Unbind this buffer.
 	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
-
-/*
-void VBO::AddPositionData(float positions[])
-{
-	glBindBuffer(GL_ARRAY_BUFFER, id);
-
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(positions), &positions);
-}
-*/

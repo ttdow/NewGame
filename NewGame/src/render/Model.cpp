@@ -52,9 +52,7 @@ Model::Model(std::vector<Vertex> vertices, std::vector<unsigned int> indices, st
 	this->textures_loaded.push_back(LoadTexture("brickwall_normal.jpg", "res/textures/", "texture_normal"));
 	stbi_set_flip_vertically_on_load(true);
 
-	this->bones = std::vector<Bone>();
-
-	this->meshes.push_back(Mesh(vertices, indices, textures_loaded, bones));
+	this->meshes.push_back(Mesh(vertices, indices, textures_loaded, false));
 }
 
 void Model::Draw(Shader& shader)
@@ -111,12 +109,12 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
 
-	unsigned int counter = 0;
-
 	// Iterate through each vertex in the mesh.
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;
+		SetVertexBoneDataToDefault(vertex);
+
 		glm::vec3 vector;
 
 		// Position data.
@@ -143,56 +141,10 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 			vec.x = mesh->mTextureCoords[0][i].x;
 			vec.y = mesh->mTextureCoords[0][i].y;
 			vertex.texCoords = vec;
-
-			/*
-			// tangent
-			vector.x = mesh->mTangents[i].x;
-			vector.y = mesh->mTangents[i].y;
-			vector.z = mesh->mTangents[i].z;
-			vertex.Tangent = vector;
-
-			// bitangent
-			vector.x = mesh->mBitangents[i].x;
-			vector.y = mesh->mBitangents[i].y;
-			vector.z = mesh->mBitangents[i].z;
-			vertex.Bitangent = vector;
-			*/
 		}
 		else
 		{
 			vertex.texCoords = glm::vec2(0.0f, 0.0f);
-		}
-		
-		if (mesh->HasBones())
-		{
-			// TODO Print this vertex's bone information for debugging.
-			/*
-			std::cout << "NumBones = " << mesh->mNumBones << std::endl;
-			for (unsigned int j = 0; j < mesh->mNumBones; j++)
-			{
-				std::cout << "Bone: " << mesh->mBones[j]->mName.data;
-				std::cout << " - VertexID: " << mesh->mBones[j]->mWeights[i].mVertexId;
-				std::cout << ", Weight: " << mesh->mBones[j]->mWeights[i].mWeight;
-				std::cout << std::endl;
-			}
-			*/
-
-			Bone newBone;
-			for (unsigned int j = 0; j < 4; j++)
-			{
-				if (j < mesh->mNumBones)
-				{
-					newBone.boneId[j] = mesh->mBones[j]->mWeights[i].mVertexId;
-					newBone.weight[j] = mesh->mBones[j]->mWeights[i].mWeight;
-				}
-				else
-				{
-					newBone.boneId[j] = 999;
-					newBone.weight[j] = -1.0f;
-				}
-			}
-
-			this->bones.push_back(newBone);
 		}
 
 		// Add the new vertex to the list.
@@ -212,21 +164,6 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 			indices.push_back(face.mIndices[j]);
 		}
 	}
-
-	// TODO Print vertex bone data for debugging.
-	/*
-	for (unsigned int i = 0; i < this->bones.size(); i++)
-	{
-		for (unsigned int j = 0; j < 4; j++)
-		{
-			std::cout << "Vertex: " << i;
-			std::cout << ", Index: " << indices[i] << " - ";
-			std::cout << this->bones[i].boneId[j] << ": ";
-			std::cout << this->bones[i].weight[j];
-			std::cout << std::endl;
-		}
-	}
-	*/
 
 	// Process materials.
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
@@ -250,29 +187,23 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 	if (textures.size() < 1)
 	{
-		Texture diffuseMap = LoadTexture("container.jpg", "res/textures/", "texture_diffuse");
+		stbi_set_flip_vertically_on_load(false);
+		Texture diffuseMap = LoadTexture("gobbo.png", "res/textures/", "texture_diffuse");
+		stbi_set_flip_vertically_on_load(false);
 		textures.insert(textures.end(), diffuseMap);
 	}
 
-	// TODO 56 vertices seems like too many.
-	/*
-	if (vertices.size() == 56)
-	{
-		std::vector<Vertex> vertices2;
-		vertices2.insert(vertices2.end(), vertices.begin(), vertices.begin() + 16);
-		std::cout << vertices2.size() << std::endl;
-		
-		for (unsigned int i = 0; i < indices.size(); i++)
-		{
-			std::cout << indices[i] << std::endl;
-		}
+	bool animated = false;
 
-		return Mesh(vertices2, indices, textures);
+	// Get animation data.
+	if (mesh->HasBones())
+	{
+		ExtractBoneWeightForVertices(vertices, mesh, scene);
+		animated = true;
 	}
-	*/
 
 	// Return the new mesh.
-	return Mesh(vertices, indices, textures, bones);
+	return Mesh(vertices, indices, textures, animated);
 }
 
 std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
@@ -327,4 +258,76 @@ Texture Model::LoadTexture(std::string filename, std::string directory, std::str
 void Model::AttachTexture(std::string filename, std::string directory, std::string typeName)
 {
 
+}
+
+// Initializes every bone ID to 999 and every weight to 0.0f
+void Model::SetVertexBoneDataToDefault(Vertex& vertex)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		vertex.boneIds[i] = -1;
+		vertex.weights[i] = 0.0f;
+	}
+}
+
+void Model::SetVertexBoneData(Vertex& vertex, int boneId, float weight)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		if (vertex.boneIds[i] < 0)
+		{
+			vertex.weights[i] = weight;
+			vertex.boneIds[i] = boneId;
+			break;
+		}
+	}
+}
+
+void Model::ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
+{
+	for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; boneIndex++)
+	{
+		int boneId = -1;
+		std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+
+		if (this->boneInfoMap.find(boneName) == this->boneInfoMap.end())
+		{
+			BoneInfo newBoneInfo;
+			newBoneInfo.id = this->boneCounter;
+			newBoneInfo.offset = ConvertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
+
+			this->boneInfoMap[boneName] = newBoneInfo;
+			boneId = this->boneCounter;
+			this->boneCounter++;
+		}
+		else
+		{
+			boneId = this->boneInfoMap[boneName].id;
+		}
+
+		assert(boneId != -1);
+
+		aiVertexWeight* weights = mesh->mBones[boneIndex]->mWeights;
+		int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+		for (int weightIndex = 0; weightIndex < numWeights; weightIndex++)
+		{
+			int vertexId = weights[weightIndex].mVertexId;
+			float weight = weights[weightIndex].mWeight;
+			
+			assert(vertexId <= vertices.size());
+
+			SetVertexBoneData(vertices[vertexId], boneId, weight);
+		}
+	}
+}
+
+glm::mat4 Model::ConvertMatrixToGLMFormat(const aiMatrix4x4& from)
+{
+	glm::mat4 to;
+	to[0][0] = from.a1; to[1][0] = from.a2; to[2][0] = from.a3; to[3][0] = from.a4;
+	to[0][1] = from.b1; to[1][1] = from.b2; to[2][1] = from.b3; to[3][1] = from.b4;
+	to[0][2] = from.c1; to[1][2] = from.c2; to[2][2] = from.c3; to[3][2] = from.c4;
+	to[0][3] = from.d1; to[1][3] = from.d2; to[2][3] = from.d3; to[3][3] = from.d4;
+	return to;
 }

@@ -1,146 +1,72 @@
-# include "Animation.h"
+#include "Animation.h"
 
 Animation::Animation(const std::string& animationPath, Model* model)
 {
 	this->deltaTime = 0.0f;
 	this->currentFrame = 0;
 
-	this->rootTransformation = glm::mat4(1.0f);
-	this->childTransformation = glm::mat4(1.0f);
-
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
+	assert(scene && scene->mRootNode);
 
 	aiAnimation* animation = scene->mAnimations[0];
-	//std::cout << "mNumChannels = " << animation->mNumChannels << std::endl;
-	unsigned int counter = 0;
-	
-	for (unsigned int i = 0; i < animation->mNumChannels; i++)
-	{
-		//std::cout << animation->mChannels[i]->mNodeName.data << std::endl;
-		//std::cout << "RotationKeys: " << animation->mChannels[i]->mNumRotationKeys << std::endl;
+	this->duration = static_cast<float>(animation->mDuration);
+	this->ticksPerSecond = static_cast<float>(animation->mTicksPerSecond);
 
-		for (unsigned int j = 0; j < animation->mChannels[i]->mNumRotationKeys; j++)
-		{
-			// TODO Print rotation keys (quats) for debugging.
-			/*
-			std::cout << j << ": (";
-			std::cout << animation->mChannels[i]->mRotationKeys[j].mValue.x << ", ";
-			std::cout << animation->mChannels[i]->mRotationKeys[j].mValue.y << ", ";
-			std::cout << animation->mChannels[i]->mRotationKeys[j].mValue.z << ", ";
-			std::cout << animation->mChannels[i]->mRotationKeys[j].mValue.w << ")" << std::endl;
-			*/
-
-			if (counter < 4)
-			{
-				counter++;
-				continue;
-			}
-
-			glm::quat quat;
-			quat.x = animation->mChannels[i]->mRotationKeys[j].mValue.x;
-			quat.y = animation->mChannels[i]->mRotationKeys[j].mValue.y;
-			quat.z = animation->mChannels[i]->mRotationKeys[j].mValue.z;
-			quat.w = animation->mChannels[i]->mRotationKeys[j].mValue.w;
-
-			//this->rotations
-			glm::mat4 rotate = glm::toMat4(quat);
-
-			this->rotations.push_back(rotate);
-		}
-	}
-
-	// TODO Print rotation matrices for debugging.
-	/*
-	std::cout << "rotations.size() = " << this->rotations.size() << std::endl;
-	for (unsigned int i = 0; i < this->rotations.size(); i++)
-	{
-		std::cout << i << std::endl;
-		glm::mat4 rotate = this->rotations[i];
-
-		for (unsigned int j = 0; j < 4; j++)
-		{
-			std::cout << "   | ";
-
-			for (unsigned int k = 0; k < 4; k++)
-			{
-				std::cout << rotate[k][j] << " ";
-			}
-
-			std::cout << " |" << std::endl;
-		}
-	}
-	*/
-
-	double duration = animation->mDuration;
-	//std::cout << "duration = " << duration << std::endl;
-	double ticksPerSecond = animation->mTicksPerSecond;
-	//std::cout << "ticksPerSecond = " << ticksPerSecond << std::endl;
-	aiNode* rootNode = scene->mRootNode;
-	std::string name = rootNode->mName.data;
-	//std::cout << name << std::endl;
-
-	for (unsigned int i = 0; i < rootNode->mNumChildren; i++)
-	{
-		std::string childName = rootNode->mChildren[i]->mName.data;
-		//std::cout << childName << std::endl;
-		//std::cout << "NumChildren: " << rootNode->mChildren[i]->mNumChildren << std::endl;
-
-		for (unsigned int j = 0; j < rootNode->mChildren[i]->mNumChildren; j++)
-		{
-			//std::cout << rootNode->mChildren[i]->mChildren[j]->mName.data << std::endl;
-			this->rootTransformation = ConvertMatrixToGLMFormat(rootNode->mChildren[i]->mChildren[j]->mTransformation);
-			//std::cout << rootNode->mChildren[i]->mChildren[j]->mNumChildren << std::endl;
-			//std::cout << rootNode->mChildren[i]->mChildren[j]->mChildren[0]->mName.data << std::endl;
-			this->childTransformation = ConvertMatrixToGLMFormat(rootNode->mChildren[i]->mChildren[j]->mChildren[0]->mTransformation);
-		}
-	}
-
-	// TODO Display initial transformation matrices for debugging.
-	/*
-	for (unsigned int i = 0; i < 4; i++)
-	{
-		for (unsigned int j = 0; j < 4; j++)
-		{
-			std::cout << this->rootTransformation[i][j] << ", ";
-		}
-
-		std::cout << std::endl;
-	}
-
-	std::cout << std::endl;
-
-	for (unsigned int i = 0; i < 4; i++)
-	{
-		for (unsigned int j = 0; j < 4; j++)
-		{
-			std::cout << this->childTransformation[i][j] << ", ";
-		}
-
-		std::cout << std::endl;
-	}
-	*/
+	ReadHierarchyData(this->rootNode, scene->mRootNode);
+	ReadMissingBones(animation, *model);
 }
 
-unsigned int Animation::GetAnimationFrame()
+Bone* Animation::FindBone(const std::string& name)
 {
-	Time* time = Time::GetInstance();
-
-	this->deltaTime += time->GetDeltaTime();
-
-	float tickTime = 1.0f / 24.0f; // 0.0416667 s
-
-	if (this->deltaTime >= tickTime)
-	{
-		this->deltaTime = 0.0f;
-		this->currentFrame++;
-		if (this->currentFrame >= this->rotations.size())
+	auto iter = std::find_if(this->bones.begin(), this->bones.end(), [&](const Bone& bone)
 		{
-			this->currentFrame = 0;
+			return bone.name == name;
 		}
+	);
+
+	if (iter == this->bones.end()) return nullptr;
+	else return &(*iter);
+}
+
+void Animation::ReadMissingBones(const aiAnimation* animation, Model& model)
+{
+	int size = animation->mNumChannels;
+
+	std::map<std::string, BoneInfo>& boneInfoMap = model.boneInfoMap;
+	int& boneCount = model.boneCounter;
+
+	for (int i = 0; i < size; i++)
+	{
+		aiNodeAnim* channel = animation->mChannels[i];
+		std::string boneName = channel->mNodeName.data;
+
+		if (boneInfoMap.find(boneName) == boneInfoMap.end())
+		{
+			boneInfoMap[boneName].id = boneCount;
+			boneCount++;
+		}
+
+		this->bones.push_back(Bone(channel->mNodeName.data, boneInfoMap[channel->mNodeName.data].id, channel));
 	}
 
-	return this->currentFrame;
+	this->boneInfoMap = boneInfoMap;
+}
+
+void Animation::ReadHierarchyData(AssimpNodeData& dest, const aiNode* src)
+{
+	assert(src);
+
+	dest.name = src->mName.data;
+	dest.transformation = Animation::ConvertMatrixToGLMFormat(src->mTransformation);
+	dest.childrenCount = src->mNumChildren;
+
+	for (int i = 0; i < src->mNumChildren; i++)
+	{
+		AssimpNodeData newData;
+		ReadHierarchyData(newData, src->mChildren[i]);
+		dest.children.push_back(newData);
+	}
 }
 
 glm::mat4 Animation::ConvertMatrixToGLMFormat(const aiMatrix4x4& from)

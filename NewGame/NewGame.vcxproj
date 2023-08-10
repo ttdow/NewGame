@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="inc\glm\detail\glm.cpp" />
+    <ClCompile Include="src\anim\AnimationController.cpp" />
     <ClCompile Include="src\ecs\Entity.cpp" />
     <ClCompile Include="src\ecs\Transform.cpp" />
     <ClCompile Include="src\game\GameManager.cpp" />
@@ -171,8 +172,11 @@
     <ClCompile Include="src\game\states\RaceTurnState.cpp" />
     <ClCompile Include="src\game\TurnManager.cpp" />
     <ClCompile Include="src\input\InputSystem.cpp" />
+    <ClCompile Include="src\input\PlayerController.cpp" />
+    <ClCompile Include="src\phys\Octree.cpp" />
     <ClCompile Include="src\phys\PhysicsSystem.cpp" />
     <ClCompile Include="src\render\Animation.cpp" />
+    <ClCompile Include="src\render\Animator.cpp" />
     <ClCompile Include="src\render\Bone.cpp" />
     <ClCompile Include="src\render\Camera.cpp" />
     <ClCompile Include="inc\glad\glad.c" />
@@ -345,9 +349,22 @@
     <None Include="lib\assimp\assimp-vc142-mtd.exp" />
     <None Include="lib\glfw\glfw3.pdb" />
     <None Include="res\obj\animcube.fbx" />
+    <None Include="res\obj\animcube2.fbx" />
     <None Include="res\obj\backpack.mtl" />
+    <None Include="res\obj\gobbo.fbx" />
+    <None Include="res\obj\gobbo2.fbx" />
+    <None Include="res\obj\gobbo_attack.fbx" />
+    <None Include="res\obj\gobbo_idle.fbx" />
+    <None Include="res\obj\gobbo_walk.fbx" />
+    <None Include="res\obj\vault_boy.mtl" />
+    <None Include="res\obj\walk.fbx" />
+    <None Include="res\obj\Waving.fbx" />
+    <None Include="res\obj\ybot.fbx" />
+    <None Include="res\obj\ybot2.fbx" />
     <None Include="res\shaders\anim.fs" />
     <None Include="res\shaders\anim.vs" />
+    <None Include="res\shaders\blending.fs" />
+    <None Include="res\shaders\blending.vs" />
     <None Include="res\shaders\colors.fs" />
     <None Include="res\shaders\colors.vs" />
     <None Include="res\shaders\fragment.shader" />
@@ -361,6 +378,10 @@
     <None Include="res\shaders\model_loading.vs" />
     <None Include="res\shaders\multiple_lights.fs" />
     <None Include="res\shaders\multiple_lights.vs" />
+    <None Include="res\shaders\normal_map.fs" />
+    <None Include="res\shaders\normal_map.vs" />
+    <None Include="res\shaders\skybox.fs" />
+    <None Include="res\shaders\skybox.vs" />
     <None Include="res\shaders\standard.fs" />
     <None Include="res\shaders\standard.vs" />
     <None Include="res\shaders\vertex.shader" />
@@ -735,6 +756,7 @@
     <ClInclude Include="inc\glm\vec4.hpp" />
     <ClInclude Include="inc\glm\vector_relational.hpp" />
     <ClInclude Include="inc\KHR\khrplatform.h" />
+    <ClInclude Include="src\anim\AnimationController.h" />
     <ClInclude Include="src\ecs\Component.h" />
     <ClInclude Include="src\ecs\Entity.h" />
     <ClInclude Include="src\ecs\Transform.h" />
@@ -747,8 +769,14 @@
     <ClInclude Include="src\game\states\RaceTurnState.h" />
     <ClInclude Include="src\game\TurnManager.h" />
     <ClInclude Include="src\input\InputSystem.h" />
+    <ClInclude Include="src\input\PlayerController.h" />
+    <ClInclude Include="src\phys\Octree.h" />
+    <ClInclude Include="src\phys\OctreeNode.h" />
     <ClInclude Include="src\phys\PhysicsSystem.h" />
+    <ClInclude Include="src\phys\Ray.h" />
+    <ClInclude Include="src\phys\Triangle.h" />
     <ClInclude Include="src\render\Animation.h" />
+    <ClInclude Include="src\render\Animator.h" />
     <ClInclude Include="src\render\Bone.h" />
     <ClInclude Include="src\render\Camera.h" />
     <ClInclude Include="src\ecs\ComponentManager.h" />
@@ -774,10 +802,16 @@
     <Image Include="res\obj\normal.png" />
     <Image Include="res\obj\roughness.jpg" />
     <Image Include="res\obj\specular.jpg" />
+    <Image Include="res\obj\vault_boy.jpg" />
+    <Image Include="res\obj\vault_boy.png" />
     <Image Include="res\textures\awesomeface.png" />
+    <Image Include="res\textures\brickwall.jpg" />
+    <Image Include="res\textures\brickwall_normal.jpg" />
     <Image Include="res\textures\container.jpg" />
     <Image Include="res\textures\container2.png" />
     <Image Include="res\textures\container2_specular.png" />
+    <Image Include="res\textures\gobbo.png" />
+    <Image Include="res\textures\Ybot.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

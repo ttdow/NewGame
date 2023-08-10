@@ -88,29 +88,64 @@ void InputSystem::Initialize(Window* window, RenderingSystem* renderingSystem)
 
 void InputSystem::Update()
 {
+	this->playerController->Reset();
 	glfwPollEvents();
+	this->playerController->Update(this->renderingSystem);
 }
 
 void InputSystem::HandleKeyInput(int key, int scancode, int action, int mods)
 {
-	Time* time = Time::GetInstance();
-
 	if (key == GLFW_KEY_W)
-		camera->ProcessKeyboard(FORWARD, time->GetDeltaTime());
+	{
+		this->playerController->HandleInput(PlayerMovement::FORWARD);
+	}
+
 	if (key == GLFW_KEY_S)
-		camera->ProcessKeyboard(BACKWARD, time->GetDeltaTime());
+	{
+		this->playerController->HandleInput(PlayerMovement::BACKWARD);
+	}
+
 	if (key == GLFW_KEY_D)
-		camera->ProcessKeyboard(RIGHT, time->GetDeltaTime());
+	{
+		this->playerController->HandleInput(PlayerMovement::RIGHT);
+	}
+
 	if (key == GLFW_KEY_A)
-		camera->ProcessKeyboard(LEFT, time->GetDeltaTime());
+	{
+		this->playerController->HandleInput(PlayerMovement::LEFT);
+	}
+
+	if (key == GLFW_KEY_SPACE)
+	{
+		// TODO Jump logic.
+	}
+
+	if (key == GLFW_KEY_0)
+		this->renderingSystem->ChangeAnimation("idle");
+	if (key == GLFW_KEY_1)
+		this->renderingSystem->ChangeAnimation("walk");
 }
 
 void InputSystem::HandleMouseButtonInput(int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_1)
-		std::cout << "Left mouse button was pressed!" << std::endl;
+	{
+		this->renderingSystem->ChangeAnimation("attack");
+	}
+
 	if (button == GLFW_MOUSE_BUTTON_2)
-		std::cout << "Right mouse button was pressed!" << std::endl;
+	{
+		if (action == GLFW_PRESS)
+		{
+			this->camera->freeCamera = true;
+			this->playerController->freeCamera = true;
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			this->camera->freeCamera = false;
+			this->playerController->freeCamera = false;
+		}
+	}
 }
 
 void InputSystem::HandleCursorPositionInput(double xposIn, double yposIn)
@@ -132,6 +167,7 @@ void InputSystem::HandleCursorPositionInput(double xposIn, double yposIn)
 	this->lastY = ypos;
 
 	this->camera->ProcessMouseMovement(xoffset, yoffset);
+	this->playerController->HandleMouseInput(xoffset, yoffset);
 }
 
 void InputSystem::HandleMouseScrollInput(double xoffset, double yoffset)

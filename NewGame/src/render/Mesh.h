@@ -12,8 +12,6 @@
 #include <string>
 #include <vector>
 
-#define MAX_BONE_INFLUENCE 4
-
 struct Texture
 {
 	unsigned int ID;
@@ -30,19 +28,17 @@ public:
 	std::vector<Texture> textures;
 	std::vector<Bone> bones;
 
-	unsigned int vao;
+	VAO* vao;
+	VBO* vbo;
+	EBO* ebo;
 
-	VAO* vaoTest;
-	VBO* vboTest;
-	EBO* eboTest;
-
-	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, std::vector<Bone> bones);
+	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, bool animated);
 
 	void Draw(Shader& shader);
 
 private:
 
-	unsigned int vbo, ebo;
+	bool animated;
 
 	void SetupMesh();
 };

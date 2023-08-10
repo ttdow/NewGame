@@ -1,9 +1,9 @@
 #pragma once
 
 #include <glad/glad.h>
-//#include <glm/glm.hpp>
 
 #include "Vertex.h"
+#include "Bone.h"
 
 #include <vector>
 #include <iostream>
@@ -18,7 +18,4 @@ public:
 
 	VBO();
 	void AddVertexData(std::vector<Vertex>& vertices);
-	//void AddPositionData(float positions[]);
-	//void AddNormalData();
-	//void AddTextureData();
 };

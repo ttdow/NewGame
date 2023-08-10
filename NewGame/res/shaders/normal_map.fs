@@ -36,7 +36,8 @@ void main()
     vec3 ambient = light.ambient * color;
 
     // Diffuse lighting.
-    vec3 norm = normalize(normal);
+    vec3 normalMap = texture(texture_normal1, texCoords).rgb;
+    vec3 norm = normalize(normalMap * 2.0 - 1.0);
     vec3 lightDir = normalize(light.position - fragPos);
     float diff = max(dot(lightDir, norm), 0.0);
     vec3 diffuse = light.diffuse * diff * color;
