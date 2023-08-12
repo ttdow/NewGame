@@ -4,19 +4,29 @@ RenderingSystem::RenderingSystem(Window *window)
 {
 	glEnable(GL_DEPTH_TEST);
 
+	this->noiseMaker = PerlinNoise::GetInstance();
+	this->noiseMaker->SetRandomSeed(999);
+
 	this->window = window;
 	this->windowWidth = window->GetWidth();
 	this->windowHeight = window->GetHeight();
 
+	// Shaders.
 	this->ourShader = new Shader("res/shaders/model_loading.vs", "res/shaders/model_loading.fs");
 	this->standardShader = new Shader("res/shaders/standard.vs", "res/shaders/standard.fs");
 	this->animShader = new Shader("res/shaders/anim.vs", "res/shaders/anim.fs");
 	this->skyboxShader = new Shader("res/shaders/skybox.vs", "res/shaders/skybox.fs");
 	this->blendShader = new Shader("res/shaders/blending.vs", "res/shaders/blending.fs");
+	this->volumeLightShader = new Shader("res/shaders/volume_light.vs", "res/shaders/volume_light.fs");
+	this->particleShader = new Shader("res/shaders/particle.vs", "res/shaders/particle.fs");
+	this->colliderShader = new Shader("res/shaders/collider.vs", "res/shaders/collider.fs");
 
-	//this->ourModel = new Model("res/obj/backpack.obj");
-	//this->modelTwo = new Model(CubeVertices::GetVertices(), CubeVertices::GetIndices(), "brickwall.jpg", "res/textures/", "texture_diffuse");
-	this->peachCastle = new Model("res/obj/peach_castle/peach_castle.obj");
+	// Particles.
+	this->particleGenerator = new ParticleGenerator(glm::vec3(-45.0f, 24.0f, -89.0f), 50, 2.0f);
+	
+	// Models.
+	this->treeLevel = new Model("res/obj/tree/tree_level.obj");
+	this->torch = new Model("res/obj/torch/torch.obj");
 
 	stbi_set_flip_vertically_on_load(true);
 	this->gobbo = new Model("res/obj/gobbo.fbx");
@@ -67,24 +77,6 @@ RenderingSystem::RenderingSystem(Window *window)
 	attackAnimator.second = this->gobboAttackAnimator;
 
 	this->goblinAnimController->animators.insert(attackAnimator);
-
-	/*
-	// Setup backpack.
-	// TODO much of this should be moved to entity/component creation.
-	this->backpack = new Entity("backpack");
-	this->backpack->components.reserve(2);
-
-	glm::vec3 pos = glm::vec3(0.0f, 0.0f, -10.0f);
-	glm::vec3 rot = glm::vec3(0.0f, 1.571f, 0.0f);
-	glm::vec3 sca = glm::vec3(1.0f, 1.0f, 1.0f);
-	this->testTransform = new Transform(this->backpack, pos, rot, sca);
-	this->testTransform->entity = this->backpack;
-	this->backpack->components.push_back(this->testTransform);
-
-	this->testRenderer = new MeshRenderer(this->ourShader, this->ourModel);
-	this->testRenderer->entity = this->backpack;
-	this->backpack->components.push_back(this->testRenderer);
-	*/
 
 	// Setup goblin character.
 	// TODO much of this should be moved to entity/component creation.
@@ -230,6 +222,22 @@ RenderingSystem::RenderingSystem(Window *window)
 
 	this->blendShader->Use();
 	this->blendShader->SetInt("texture1", 0);
+
+	this->particleShader->Use();
+	this->particleShader->SetInt("texture", 0);
+
+	// Collider test.
+	this->boxCollider = new BoxCollider();
+	glGenVertexArrays(1, &this->boxCollider->vao);
+	glGenBuffers(1, &this->boxCollider->vbo);
+	glBindVertexArray(this->boxCollider->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, this->boxCollider->vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(this->boxCollider->vertices), &this->boxCollider->vertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glBindVertexArray(0);
+
+	this->boxCollider2 = new BoxCollider();
 }
 
 RenderingSystem::~RenderingSystem()
@@ -239,10 +247,14 @@ RenderingSystem::~RenderingSystem()
 	delete(this->animShader);
 	delete(this->skyboxShader);
 	delete(this->blendShader);
+	delete(this->volumeLightShader);
+	delete(this->particleShader);
+	delete(this->colliderShader);
 
 	delete(this->ourModel);
 	delete(this->modelTwo);
-	delete(this->peachCastle);
+	delete(this->treeLevel);
+	delete(this->torch);
 
 	delete(this->gobbo);
 	delete(this->gobboWalk);
@@ -261,6 +273,13 @@ RenderingSystem::~RenderingSystem()
 	delete(this->goblinAnimController);
 
 	delete(this->camera);
+
+	delete(this->noiseMaker);
+
+	delete(this->particleGenerator);
+
+	delete(this->boxCollider);
+	delete(this->boxCollider2);
 }
 
 void RenderingSystem::Update()
@@ -278,52 +297,61 @@ void RenderingSystem::Update()
 	glm::mat4 model = glm::mat4(1.0f);
 
 	// Lighting data.
+	glm::vec3 lightDir = glm::normalize(glm::vec3(0.0f, -1.0f, 1.0f));
 	glm::vec3 lightPos = glm::vec3(0.0f, 10.0f, 5.0f);
-	glm::vec3 lightAmbient = glm::vec3(0.1f, 0.1f, 0.1f);
-	glm::vec3 lightDiffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-	glm::vec3 lightSpecular = glm::vec3(0.3f, 0.3f, 0.3f);
-
-	/*
-	// Draw backpack.
-	//this->backpack->GetRenderer()->Update(projection, view);
-	
-	// Draw cube.
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(5.0f, 0.0f, -10.0f));
-	model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-
-	standardShader->Use();
-	standardShader->SetMat4("model", model);
-	standardShader->SetMat4("view", view);
-	standardShader->SetMat4("projection", projection);
-	standardShader->SetVec3("viewPos", camera->position);
-	standardShader->SetFloat("material.shininess", 32.0);
-	standardShader->SetInt("material.diffuse", 0);
-	standardShader->SetInt("material.specular", 0);
-	standardShader->SetVec3("light.position", lightPos);
-	standardShader->SetVec3("light.ambient", lightAmbient);
-	standardShader->SetVec3("light.diffuse", lightDiffuse);
-	standardShader->SetVec3("light.specular", lightSpecular);
-	
-	modelTwo->Draw(*standardShader);
-	*/
+	glm::vec3 lightAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
+	glm::vec3 lightDiffuse = glm::vec3(0.4f, 0.4f, 0.4f);
+	glm::vec3 lightSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
 
 	// Draw goblin.
 	this->goblin->GetRenderer()->AnimUpdate(projection,
 										    view,
 											camera->position,
-											lightPos,
+											lightDir,
 											lightAmbient,
 											lightDiffuse,
 											lightSpecular,
 											this->goblinAnimController);
+	
+	glm::vec3 pointLightPos = glm::vec3(-45.0f, 20.0f, -89.0f);
+	glm::vec3 pointLightAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
+	glm::vec3 pointLightDiffuse = glm::vec3(0.8f, 0.8f, 0.8f);
+	glm::vec3 pointLightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
+	float pointLightIntensity = this->noiseMaker->Noise(glfwGetTime());
 
-	// Draw the peach castle.
+	/*
+	// Draw goblin clone.
 	model = glm::mat4(1.0f);
-	//model = glm::translate(model, glm::vec3(0.0f, -15.0f, 0.0f));
-	//model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	//model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+	glm::mat4 goblinCloneModel = model;
+	this->standardShader->Use();
+	this->standardShader->SetMat4("model", this->goblinTransform->modelMatrix);
+	this->standardShader->SetMat4("view", view);
+	this->standardShader->SetMat4("projection", projection);
+	this->standardShader->SetVec3("viewPos", camera->position);
+	this->standardShader->SetFloat("material.shininess", 32.0);
+	this->standardShader->SetInt("material.diffuse", 0);
+	this->standardShader->SetInt("material.specular", 0);
+	this->standardShader->SetVec3("directionalLight.direction", lightDir);
+	this->standardShader->SetVec3("directionalLight.ambient", lightAmbient);
+	this->standardShader->SetVec3("directionalLight.diffuse", lightDiffuse);
+	this->standardShader->SetVec3("directionalLight.specular", lightSpecular);
+	this->standardShader->SetVec3("pointLight.position", pointLightPos + glm::vec3(0.0f, 5.0f, 0.0f));
+	this->standardShader->SetVec3("pointLight.ambient", pointLightAmbient);
+	this->standardShader->SetVec3("pointLight.diffuse", pointLightDiffuse);
+	this->standardShader->SetVec3("pointLight.specular", pointLightSpecular);
+	this->standardShader->SetFloat("pointLight.constant", 1.0f);
+	this->standardShader->SetFloat("pointLight.linear", 0.1f);
+	this->standardShader->SetFloat("pointLight.quadratic", 0.001f);
+	this->standardShader->SetFloat("pointLight.intensity", pointLightIntensity);
 
+	this->gobbo->Draw(*this->standardShader);
+	*/
+
+	/*
+	// Draw the tree level.
+	model = glm::mat4(1.0f);
 	this->standardShader->Use();
 	this->standardShader->SetMat4("model", model);
 	this->standardShader->SetMat4("view", view);
@@ -332,13 +360,42 @@ void RenderingSystem::Update()
 	this->standardShader->SetFloat("material.shininess", 32.0);
 	this->standardShader->SetInt("material.diffuse", 0);
 	this->standardShader->SetInt("material.specular", 0);
-	this->standardShader->SetVec3("light.position", lightPos);
-	this->standardShader->SetVec3("light.ambient", lightAmbient);
-	this->standardShader->SetVec3("light.diffuse", lightDiffuse);
-	this->standardShader->SetVec3("light.specular", lightSpecular);
+	this->standardShader->SetVec3("directionalLight.direction", lightDir);
+	this->standardShader->SetVec3("directionalLight.ambient", lightAmbient);
+	this->standardShader->SetVec3("directionalLight.diffuse", lightDiffuse);
+	this->standardShader->SetVec3("directionalLight.specular", lightSpecular);
+	this->standardShader->SetVec3("pointLight.position", pointLightPos + glm::vec3(0.0f, 5.0f, 0.0f));
+	this->standardShader->SetVec3("pointLight.ambient", pointLightAmbient);
+	this->standardShader->SetVec3("pointLight.diffuse", pointLightDiffuse);
+	this->standardShader->SetVec3("pointLight.specular", pointLightSpecular);
+	this->standardShader->SetFloat("pointLight.constant", 1.0f);
+	this->standardShader->SetFloat("pointLight.linear", 0.1f);
+	this->standardShader->SetFloat("pointLight.quadratic", 0.001f);
+	this->standardShader->SetFloat("pointLight.intensity", pointLightIntensity);
 
-	this->peachCastle->Draw(*this->standardShader);
+	this->treeLevel->Draw(*this->standardShader);
+	*/
 
+	// TODO Volumetric lighting test.
+	/*
+	model = glm::mat4(1.0f);
+	this->volumeLightShader->Use();
+	this->volumeLightShader->SetMat4("model", model);
+	this->volumeLightShader->SetMat4("view", view);
+	this->volumeLightShader->SetMat4("projection", projection);
+	this->volumeLightShader->SetVec3("viewPos", camera->position);
+	this->volumeLightShader->SetFloat("material.shininess", 32.0);
+	this->volumeLightShader->SetInt("material.diffuse", 0);
+	this->volumeLightShader->SetInt("material.specular", 0);
+	this->volumeLightShader->SetVec3("light.position", lightPos);
+	this->volumeLightShader->SetVec3("light.ambient", lightAmbient);
+	this->volumeLightShader->SetVec3("light.diffuse", lightDiffuse);
+	this->volumeLightShader->SetVec3("light.specular", lightSpecular);
+
+	this->treeLevel->Draw(*this->volumeLightShader);
+	*/
+
+	/*
 	// Grass.
 	this->blendShader->Use();
 	this->blendShader->SetMat4("projection", projection);
@@ -354,9 +411,86 @@ void RenderingSystem::Update()
 		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
 		this->blendShader->SetMat4("model", model);
 
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+	*/
+
+	glBindVertexArray(0);
+
+	// Flames.
+	this->particleGenerator->Update();
+	this->particleShader->Use();
+	this->particleShader->SetMat4("projection", projection);
+	this->particleShader->SetMat4("view", view);
+	glBindVertexArray(this->blendVAO);
+	glBindTexture(GL_TEXTURE_2D, this->particleTexture);
+
+	for (unsigned int i = 0; i < this->particleGenerator->particles.size(); i++)
+	{
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, this->particleGenerator->particles[i].position);
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 1.0f));
+		this->particleShader->SetMat4("model", model);
+		this->particleShader->SetVec4("color", this->particleGenerator->particles[i].color);
+
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
+	glBindVertexArray(0);
+
+	// Torches.
+	model = glm::translate(glm::mat4(1.0f), pointLightPos + glm::vec3(0.0f, -2.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
+	this->standardShader->Use();
+	this->standardShader->SetMat4("model", model);
+	this->standardShader->SetMat4("view", view);
+	this->standardShader->SetMat4("projection", projection);
+	this->standardShader->SetVec3("viewPos", camera->position);
+	this->standardShader->SetFloat("material.shininess", 32.0);
+	this->standardShader->SetInt("material.diffuse", 0);
+	this->standardShader->SetInt("material.specular", 0);
+	this->standardShader->SetVec3("directionalLight.direction", lightDir);
+	this->standardShader->SetVec3("directionalLight.ambient", lightAmbient);
+	this->standardShader->SetVec3("directionalLight.diffuse", lightDiffuse);
+	this->standardShader->SetVec3("directionalLight.specular", lightSpecular);
+	this->standardShader->SetVec3("pointLight.position", pointLightPos);
+	this->standardShader->SetVec3("pointLight.ambient", pointLightAmbient);
+	this->standardShader->SetVec3("pointLight.diffuse", pointLightDiffuse);
+	this->standardShader->SetVec3("pointLight.specular", pointLightSpecular);
+	this->standardShader->SetFloat("pointLight.constant", 1.0f);
+	this->standardShader->SetFloat("pointLight.linear", 0.045f);
+	this->standardShader->SetFloat("pointLight.quadratic", 0.0075f);
+	this->standardShader->SetFloat("pointLight.intensity", pointLightIntensity);
+
+	this->torch->Draw(*this->standardShader);
+	
+	// Collider 1 visualization.
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(this->goblinTransform->modelMatrix[3][0], 
+											this->goblinTransform->modelMatrix[3][1] + 5.0f, 
+										    this->goblinTransform->modelMatrix[3][2] + 2.0f));
+	this->boxCollider->center = 
+
+	this->colliderShader->Use();
+	this->colliderShader->SetMat4("model", model);
+	this->colliderShader->SetMat4("view", view);
+	this->colliderShader->SetMat4("projection", projection);
+	this->colliderShader->SetVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
+	glBindVertexArray(this->boxCollider->vao);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+
+	// Collider 2 visualization.
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(5.0f, 5.0f, 2.0f));
+	this->colliderShader->Use();
+	this->colliderShader->SetMat4("model", model);
+	this->colliderShader->SetMat4("view", view);
+	this->colliderShader->SetMat4("projection", projection);
+	this->colliderShader->SetVec3("color", glm::vec3(0.0f, 0.0f, 1.0f));
+	glBindVertexArray(this->boxCollider->vao);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 
 	// Draw skybox last.

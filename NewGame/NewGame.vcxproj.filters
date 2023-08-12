@@ -120,6 +120,15 @@
     <ClCompile Include="src\phys\Octree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\util\PerlinNoise.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\particle\Particle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\particle\ParticleGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\glfw\glfw3.lib" />
@@ -599,6 +608,12 @@
     <None Include="res\shaders\skybox.fs" />
     <None Include="res\shaders\blending.vs" />
     <None Include="res\shaders\blending.fs" />
+    <None Include="res\shaders\volume_light.vs" />
+    <None Include="res\shaders\volume_light.fs" />
+    <None Include="res\shaders\particle.vs" />
+    <None Include="res\shaders\particle.fs" />
+    <None Include="res\shaders\collider.vs" />
+    <None Include="res\shaders\collider.fs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\glad\glad.h">
@@ -1823,6 +1838,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\phys\OctreeNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\util\PerlinNoise.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\particle\Particle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\particle\ParticleGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\phys\BoxCollider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

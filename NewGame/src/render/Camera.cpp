@@ -16,6 +16,7 @@ Camera::Camera(Transform* playerTransform)
 	this->zoom = 45.0f;
 
 	this->freeCamera = false;
+	this->moveCamera = false;
 
 	this->radialDistance = glm::sqrt((20.0f * 20.0f) + (glm::abs(this->position.z) * glm::tan(glm::radians(30.0f))) * (glm::abs(this->position.z) * glm::tan(glm::radians(30.0f))));
 	this->inclination = 0.0f;
@@ -42,6 +43,15 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
 
 		//float deltaAzimuth = xoffset * 0.33f;
 		//this->azimuth -= deltaAzimuth;
+	}
+
+	if (this->moveCamera)
+	{
+		float deltaInclination = yoffset * 0.2f;
+		this->inclination += deltaInclination;
+
+		float deltaAzimuth = xoffset * 0.33f;
+		this->azimuth -= deltaAzimuth;
 	}
 }
 

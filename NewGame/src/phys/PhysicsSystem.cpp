@@ -10,26 +10,6 @@ void PhysicsSystem::SetPlayerCharacterTransform(Transform* playerTransform)
 	this->playerTransform = playerTransform;
 }
 
-float PhysicsSystem::FindMinX(float minVal, Triangle& newTriangle)
-{
-	if (minVal > newTriangle.v0.x)
-	{
-		minVal = newTriangle.v0.x;
-	}
-
-	if (minVal > newTriangle.v1.x)
-	{
-		minVal = newTriangle.v1.x;
-	}
-
-	if (minVal > newTriangle.v2.x)
-	{
-		minVal = newTriangle.v2.x;
-	}
-
-	return minVal;
-}
-
 void PhysicsSystem::SetEnvironmentMesh(Model* environmentModel)
 {
 	// Load the triangular mesh from the environment model for physics calculations.
@@ -42,9 +22,15 @@ void PhysicsSystem::SetEnvironmentMesh(Model* environmentModel)
 	float maxY = std::numeric_limits<float>::min();;
 	float maxZ = std::numeric_limits<float>::min();;
 
-	for (unsigned int j = 0; j < 3; j++)
+	//glm::mat3 scaler = glm::mat3(glm::scale(glm::mat4(1.0f), glm::vec3(100.0f, 100.0f, 100.0f)));
+
+	std::cout << "Model size: " << this->environmentModel->meshes.size() << std::endl;
+
+	for (unsigned int j = 0; j < this->environmentModel->meshes.size(); j++)
 	{
 		Mesh& mesh = this->environmentModel->meshes[j];
+		std::cout << "Mesh " << j << " size: " << mesh.indices.size() << std::endl;
+
 		for (unsigned int i = 0; i < mesh.indices.size(); i += 3)
 		{
 			Triangle newTriangle;
@@ -91,6 +77,8 @@ void PhysicsSystem::SetEnvironmentMesh(Model* environmentModel)
 		}
 	}
 
+	std::cout << "Triangles: " << this->triangles.size() << std::endl;
+
 	// Save bounding box volume to root node of Octree.
 	glm::vec3 min = glm::vec3(minX, minY, minZ);
 	glm::vec3 max = glm::vec3(maxX, maxY, maxZ);
@@ -106,6 +94,9 @@ void PhysicsSystem::SetEnvironmentMesh(Model* environmentModel)
 void PhysicsSystem::Update()
 {
 	CalculatePlayerGravity();
+
+	glm::vec3 pos = *this->playerTransform->position;
+	//std::cout << "Player position: (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << std::endl;
 }
 
 void PhysicsSystem::CalculatePlayerGravity()
@@ -113,7 +104,10 @@ void PhysicsSystem::CalculatePlayerGravity()
 	// Define ray originating at the player's position and shooting downward along gravity vector.
 	Ray playerRay(*this->playerTransform->position, glm::vec3(0.0f, -1.0f, 0.0f));
 
+	int collisionCounter = 0;
+
 	// Search the terrain mesh for collision points.
+	std::vector<glm::vec3> collisionPoints;
 	glm::vec3 collisionPoint = *this->playerTransform->position;
 	for (unsigned int i = 0; i < this->triangles.size(); i++)
 	{
@@ -140,6 +134,11 @@ void PhysicsSystem::CalculatePlayerGravity()
 
 		// Determine the intersection point P.
 		glm::vec3 P = playerRay.origin + (t * playerRay.GetDirection());
+
+		if (isnan(P.x) || isnan(P.y) || isnan(P.z))
+		{
+			continue;
+		}
 
 		// Calculate the vectors from each vertex of the triangles to P.
 		glm::vec3 v0P = P - this->triangles[i].v0;
@@ -180,8 +179,60 @@ void PhysicsSystem::CalculatePlayerGravity()
 		}
 
 		collisionPoint = P;
+		collisionCounter++;
+
+		collisionPoints.push_back(collisionPoint);
+
+		//std::cout << "Collision Triangle v0: (" << this->triangles[i].v0.x << ", " << this->triangles[i].v0.y << ", " << this->triangles[i].v0.z << ")" << std::endl;
+		//std::cout << "Collision Triangle v1: (" << this->triangles[i].v1.x << ", " << this->triangles[i].v1.y << ", " << this->triangles[i].v1.z << ")" << std::endl;
+		//std::cout << "Collision Triangle v2: (" << this->triangles[i].v2.x << ", " << this->triangles[i].v2.y << ", " << this->triangles[i].v2.z << ")" << std::endl;
+		//std::cout << std::endl;
 	}
 
-	// Update the player's transform using the terrain height.
-	this->playerTransform->position->y = collisionPoint.y;
+	// Find the highest collision point underneath the player.
+	glm::vec3 playerPos = *this->playerTransform->position;
+	glm::vec3 playerCenter = playerPos + glm::vec3(0.0f, 5.0f, 0.0f);
+	float highestYUnderPlayer = std::numeric_limits<float>::min();
+	unsigned int correctCollisionPoint = 999;
+	for (unsigned int i = 0; i < collisionPoints.size(); i++)
+	{
+		if (collisionPoints[i].y <= playerCenter.y)
+		{
+			if (collisionPoints[i].y >= highestYUnderPlayer)
+			{
+				highestYUnderPlayer = collisionPoints[i].y;
+				correctCollisionPoint = i;
+			}
+		}
+	}
+
+	if (correctCollisionPoint != 999)
+	{
+		collisionPoint = collisionPoints[correctCollisionPoint];
+	}
+
+	//std::cout << "Collision Counter: " << collisionCounter << std::endl;
+	//std::cout << "Player position: (" << playerPos.x << ", " << playerPos.y << ", " << playerPos.z << ")" << std::endl;
+	//std::cout << "Collision position: (" << collisionPoint.x << ", " << collisionPoint.y << ", " << collisionPoint.z << ")" << std::endl;
+
+	// Smooth falling time.
+	Time* timer = Time::GetInstance();
+	float heightDiff = this->playerTransform->position->y - collisionPoint.y;
+	if (glm::abs(heightDiff) <= 2.0f)
+	{
+		// Update the player's transform using the terrain height.
+		this->playerTransform->position->y = collisionPoint.y;
+	}
+	else
+	{
+		if (heightDiff > 0)
+		{
+			this->playerTransform->position->y -= 2.0f * timer->GetDeltaTime() * 10.0f;
+		}
+		else
+		{
+			this->playerTransform->position->y += 2.0f * timer->GetDeltaTime() * 10.0f;
+		}
+	}
+	
 }

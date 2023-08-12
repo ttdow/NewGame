@@ -12,6 +12,7 @@
 #include "game/StateManager.h"
 #include "input/PlayerController.h"
 #include "phys/PhysicsSystem.h"
+#include "util/PerlinNoise.h"
 
 std::vector<glm::vec3> BSpline(std::vector<glm::vec3>& controlPoints)
 {
@@ -119,7 +120,7 @@ int main()
 	inputSystem->playerController = playerController;
 
 	PhysicsSystem* physicsSystem = new PhysicsSystem();
-	physicsSystem->SetEnvironmentMesh(renderingSystem->peachCastle);
+	physicsSystem->SetEnvironmentMesh(renderingSystem->treeLevel);
 	physicsSystem->SetPlayerCharacterTransform(renderingSystem->goblinTransform);
 
 	// ----------------------- EVENT SYSTEM TESTING ---------------------------
@@ -196,8 +197,6 @@ int main()
 	delete(renderingSystem);
 	delete(profiler);
 	delete(myWindow);
-
-	//delete(testState);
 
 	return 0;
 }

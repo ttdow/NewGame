@@ -30,6 +30,6 @@ private:
 
 	Time* time;
 
-	const float RUN_SPEED = 50;
-	const float TURN_SPEED = 20;
+	const float RUN_SPEED = 200;
+	const float TURN_SPEED = 40;
 };

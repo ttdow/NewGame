@@ -15,6 +15,8 @@ public:
 	std::map<std::string, Animation*> animations;
 	std::map<std::string, Animator*> animators;
 
+	Animator* currentAnimator;
+
 	AnimationController();
 	void Update(Shader* shader);
 	void Play(std::string animationName);
@@ -23,5 +25,4 @@ private:
 
 	Time* time;
 	Animation* currentAnimation;
-	Animator* currentAnimator;
 };

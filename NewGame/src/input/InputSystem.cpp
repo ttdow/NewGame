@@ -130,7 +130,16 @@ void InputSystem::HandleMouseButtonInput(int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_1)
 	{
-		this->renderingSystem->ChangeAnimation("attack");
+		//this->renderingSystem->ChangeAnimation("attack");
+
+		if (action == GLFW_PRESS)
+		{
+			this->camera->moveCamera = true;
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			this->camera->moveCamera = false;
+		}
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_2)

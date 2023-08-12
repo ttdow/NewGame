@@ -37,10 +37,10 @@ void main()
 
         vec4 localPosition = finalBonesMatrices[boneIds[i]] * vec4(aPos, 1.0);
         totalPosition += localPosition * boneWeights[i];
-        normal = mat3(finalBonesMatrices[boneIds[i]]) * aNormal;
     }
 
-    fragPos = vec3(model * vec4(aPos, 1.0));
+    normal = mat3(transpose(inverse(model))) * aNormal;
+    fragPos = vec3(model * totalPosition);
     texCoords = aTexCoords;
 
     gl_Position = projection * view * model * totalPosition;

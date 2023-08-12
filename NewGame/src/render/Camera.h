@@ -35,6 +35,7 @@ public:
 	float zoom;
 
 	bool freeCamera;
+	bool moveCamera;
 
 	Camera(Transform* playerTransform);
 

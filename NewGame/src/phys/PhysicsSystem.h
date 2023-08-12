@@ -31,7 +31,5 @@ private:
 	
 	Transform* playerTransform;
 
-	float FindMinX(float minVal, Triangle& newTriangle);
-	void FindMaxPoint();
 	void CalculatePlayerGravity();
 };
