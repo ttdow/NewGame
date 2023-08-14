@@ -9,6 +9,7 @@
 #include "stb_image.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "Texture.h"
 #include "Bone.h"
 
 #include <string>
@@ -17,8 +18,6 @@
 #include <iostream>
 #include <map>
 #include <vector>
-
-unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false);
 
 struct BoneInfo
 {
@@ -30,7 +29,7 @@ class Model
 {
 public:
 	
-	std::vector<Texture> textures_loaded;
+	std::vector<TextureClass> textures_loaded;
 	std::vector<Mesh> meshes;
 	std::string directory;
 	bool gammaCorrection;
@@ -42,7 +41,6 @@ public:
 	Model(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::string filename, std::string directory, std::string textureType, bool gamma = false);
 
 	void Draw(Shader& shader);
-	void AttachTexture(std::string filename, std::string directory, std::string textureType);
 
 private:
 
@@ -53,8 +51,7 @@ private:
 	void LoadModel(std::string const& path);
 	void ProcessNode(aiNode* node, const aiScene* scene);
 	Mesh ProcessMesh(aiMesh* mesh, const aiScene* scene);
-	std::vector<Texture> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
-	Texture LoadTexture(std::string filename, std::string directory, std::string typeName);
+	std::vector<TextureClass> LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
 
 	glm::mat4 ConvertMatrixToGLMFormat(const aiMatrix4x4& from);
 };

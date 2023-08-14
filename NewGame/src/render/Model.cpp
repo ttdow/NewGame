@@ -1,44 +1,5 @@
 #include "Model.h"
 
-unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma)
-{
-	std::string filename = std::string(path);
-	filename = directory + '/' + filename;
-
-	std::cout << "Loading texture: " << filename << std::endl;
-
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-
-	int width, height, nChannels;
-	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nChannels, 0);
-	if (data)
-	{
-		GLenum format;
-		if (nChannels == 1) format = GL_RED;
-		else if (nChannels == 3) format = GL_RGB;
-		else if (nChannels == 4) format = GL_RGBA;
-		else format = GL_RGB;
-
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	}
-	else
-	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
-	}
-
-	stbi_image_free(data);
-
-	return textureID;
-}
-
 Model::Model(std::string const& path, bool gamma)
 {
 	LoadModel(path);
@@ -48,13 +9,15 @@ Model::Model(std::vector<Vertex> vertices, std::vector<unsigned int> indices, st
 {
 	this->gammaCorrection = gamma;
 
-	this->textures_loaded.push_back(LoadTexture(filename, directory, textureType));
-	
-	stbi_set_flip_vertically_on_load(false);
-	this->textures_loaded.push_back(LoadTexture("brickwall_normal.jpg", "res/textures/", "texture_normal"));
-	stbi_set_flip_vertically_on_load(true);
+	this->textures_loaded.push_back(TextureClass(directory + filename, false));
+	this->textures_loaded[0].SetType(textureType);
+
+	this->textures_loaded.push_back(TextureClass("res/textures/brickwall_normal.jpg", false));
+	this->textures_loaded[1].SetType("texture_normal");
 
 	this->meshes.push_back(Mesh(vertices, indices, textures_loaded, false));
+
+	this->boneCounter = 0;
 }
 
 void Model::Draw(Shader& shader)
@@ -109,7 +72,7 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 	// Define data structures.
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
-	std::vector<Texture> textures;
+	std::vector<TextureClass> textures;
 
 	// Iterate through each vertex in the mesh.
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
@@ -172,27 +135,26 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 
 	// Load textures.
 	// 1. Diffuse maps.
-	std::vector<Texture> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+	std::vector<TextureClass> diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 
 	// 2. Specular maps.
-	std::vector<Texture> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+	std::vector<TextureClass> specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 
 	// 3. Normal maps.
-	std::vector<Texture> normalMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+	std::vector<TextureClass> normalMaps = LoadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
 	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 
 	// 4. Height maps.
-	std::vector<Texture> heightMaps = LoadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
+	std::vector<TextureClass> heightMaps = LoadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
 	if (textures.size() < 1)
 	{
-		stbi_set_flip_vertically_on_load(false);
-		Texture diffuseMap = LoadTexture("gobbo.png", "res/textures/", "texture_diffuse");
-		stbi_set_flip_vertically_on_load(false);
-		textures.insert(textures.end(), diffuseMap);
+		TextureClass diffuseTex = TextureClass("res/textures/gobbo.png", false);
+		diffuseTex.SetType("texture_diffuse");
+		textures.insert(textures.end(), diffuseTex);
 	}
 
 	bool animated = false;
@@ -208,10 +170,10 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 	return Mesh(vertices, indices, textures, animated);
 }
 
-std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
+std::vector<TextureClass> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
 {
 	// Define data structure.
-	std::vector<Texture> textures;
+	std::vector<TextureClass> textures;
 
 	// Iterate through each texture in the material.
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
@@ -224,7 +186,7 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType 
 		bool skip = false;
 		for (unsigned int j = 0; j < textures_loaded.size(); j++)
 		{
-			if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
+			if (std::strcmp(textures_loaded[j].GetFilePath().data(), str.C_Str()) == 0)
 			{
 				textures.push_back(textures_loaded[j]);
 				skip = true;
@@ -235,31 +197,16 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType 
 		// Create a new texture if the current texture does not already exist.
 		if (!skip)
 		{
-			Texture texture;
-			texture.ID = TextureFromFile(str.C_Str(), this->directory);
-			texture.type = typeName;
-			texture.path = str.C_Str();
+			std::string filePath = this->directory + "/" + std::string(str.C_Str());
+
+			TextureClass texture = TextureClass(filePath, false);
+			texture.SetType(typeName);
 			textures.push_back(texture);
 			textures_loaded.push_back(texture);
 		}
 	}
 
 	return textures;
-}
-
-Texture Model::LoadTexture(std::string filename, std::string directory, std::string typeName)
-{
-	Texture texture;
-	texture.ID = TextureFromFile(filename.c_str(), directory);
-	texture.type = typeName;
-	texture.path = filename.c_str();
-	
-	return texture;
-}
-
-void Model::AttachTexture(std::string filename, std::string directory, std::string typeName)
-{
-
 }
 
 // Initializes every bone ID to 999 and every weight to 0.0f
@@ -306,8 +253,6 @@ void Model::ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* 
 		{
 			boneId = this->boneInfoMap[boneName].id;
 		}
-
-		std::cout << "Bone name: " << boneName << ", Bone ID: " << boneId << std::endl;
 
 		assert(boneId != -1);
 

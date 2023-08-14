@@ -50,6 +50,10 @@ void PlayerController::HandleInput(PlayerMovement input)
 			this->currentTurnSpeed = -TURN_SPEED;
 			break;
 		case JUMP:
+			// TODO
+			break;
+		case ATTACK:
+			// TODO
 			break;
 	}
 }

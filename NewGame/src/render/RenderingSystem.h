@@ -18,6 +18,8 @@
 #include "../util/PerlinNoise.h"
 #include "../particle/ParticleGenerator.h"
 #include "../phys/BoxCollider.h"
+#include "Texture.h"
+#include "../ui/UIElement.h"
 
 #include "../ecs/Entity.h"
 #include "../ecs/Transform.h"
@@ -41,12 +43,18 @@ private:
 	Shader* volumeLightShader;
 	Shader* particleShader;
 	Shader* colliderShader;
+	Shader* grassShader;
+	Shader* uiShader;
+	Shader* textShader;
+
+	UIElement* uiElement;
+
+	TextureClass* grassTex;
 
 	ParticleGenerator* particleGenerator;
 
-	Model* ourModel;
-	Model* modelTwo;
 	Model* gobbo;
+	Model* spider;
 
 	AnimationController* goblinAnimController;
 	Animation* gobboWalk;
@@ -55,6 +63,12 @@ private:
 	Animator* gobboIdleAnimator;
 	Animation* gobboAttack;
 	Animator* gobboAttackAnimator;
+	Animation* gobboJump;
+	Animator* gobboJumpAnimator;
+
+	AnimationController* spiderAnimController;
+	Animation* spiderMove;
+	Animator* spiderMoveAnimator;
 
 	unsigned int textureId;
 	unsigned int skyboxVAO, skyboxVBO;

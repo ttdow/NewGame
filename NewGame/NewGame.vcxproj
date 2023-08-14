@@ -96,13 +96,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\freetype;$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)lib\glfw;$(ProjectDir)lib\assimp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\glfw;$(ProjectDir)lib\freetype;$(ProjectDir)lib\assimp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freetype.lib;glfw3.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -113,15 +113,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\freetype;$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)lib\glfw;$(ProjectDir)lib\assimp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\glfw;$(ProjectDir)lib\freetype;$(ProjectDir)lib\assimp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freetype.lib;glfw3.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,13 +130,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\freetype;$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)lib\glfw;$(ProjectDir)lib\assimp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\glfw;$(ProjectDir)lib\freetype;$(ProjectDir)lib\assimp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freetype.lib;glfw3.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -147,15 +147,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\freetype;$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)lib\glfw;$(ProjectDir)lib\assimp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\glfw;$(ProjectDir)lib\freetype;$(ProjectDir)lib\assimp;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>freetype.lib;glfw3.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -175,6 +175,7 @@
     <ClCompile Include="src\input\PlayerController.cpp" />
     <ClCompile Include="src\particle\Particle.cpp" />
     <ClCompile Include="src\particle\ParticleGenerator.cpp" />
+    <ClCompile Include="src\phys\BoxCollider.cpp" />
     <ClCompile Include="src\phys\Octree.cpp" />
     <ClCompile Include="src\phys\PhysicsSystem.cpp" />
     <ClCompile Include="src\render\Animation.cpp" />
@@ -190,9 +191,11 @@
     <ClCompile Include="src\render\Model.cpp" />
     <ClCompile Include="src\render\RenderingSystem.cpp" />
     <ClCompile Include="src\render\Shader.cpp" />
+    <ClCompile Include="src\render\Texture.cpp" />
     <ClCompile Include="src\render\VAO.cpp" />
     <ClCompile Include="src\render\VBO.cpp" />
     <ClCompile Include="src\ui\EventSystem.cpp" />
+    <ClCompile Include="src\ui\UIElement.cpp" />
     <ClCompile Include="src\util\PerlinNoise.cpp" />
     <ClCompile Include="src\util\Profiler.cpp" />
     <ClCompile Include="src\util\Time.cpp" />
@@ -200,11 +203,14 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\assimp\assimp-vc142-mtd.lib" />
+    <Library Include="lib\freetype\freetype.lib" />
     <Library Include="lib\glfw\glfw3.lib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assimp-vc142-mtd.dll" />
     <None Include="assimp-vc142-mtd.pdb" />
+    <None Include="freetype.dll" />
+    <None Include="freetype.pdb" />
     <None Include="inc\assimp\color4.inl" />
     <None Include="inc\assimp\material.inl" />
     <None Include="inc\assimp\matrix3x3.inl" />
@@ -359,6 +365,10 @@
     <None Include="res\obj\gobbo_attack.fbx" />
     <None Include="res\obj\gobbo_idle.fbx" />
     <None Include="res\obj\gobbo_walk.fbx" />
+    <None Include="res\obj\peach_castle\peach_castle.mtl" />
+    <None Include="res\obj\room.mtl" />
+    <None Include="res\obj\torch\torch.mtl" />
+    <None Include="res\obj\tree\tree_level.mtl" />
     <None Include="res\obj\vault_boy.mtl" />
     <None Include="res\obj\walk.fbx" />
     <None Include="res\obj\Waving.fbx" />
@@ -373,6 +383,8 @@
     <None Include="res\shaders\colors.fs" />
     <None Include="res\shaders\colors.vs" />
     <None Include="res\shaders\fragment.shader" />
+    <None Include="res\shaders\grass.fs" />
+    <None Include="res\shaders\grass.vs" />
     <None Include="res\shaders\lighting_maps.fs" />
     <None Include="res\shaders\lighting_maps.vs" />
     <None Include="res\shaders\light_cube.fs" />
@@ -391,6 +403,10 @@
     <None Include="res\shaders\skybox.vs" />
     <None Include="res\shaders\standard.fs" />
     <None Include="res\shaders\standard.vs" />
+    <None Include="res\shaders\text.fs" />
+    <None Include="res\shaders\text.vs" />
+    <None Include="res\shaders\ui.fs" />
+    <None Include="res\shaders\ui.vs" />
     <None Include="res\shaders\vertex.shader" />
     <None Include="res\shaders\volume_light.fs" />
     <None Include="res\shaders\volume_light.vs" />
@@ -479,6 +495,98 @@
     <ClInclude Include="inc\assimp\XmlParser.h" />
     <ClInclude Include="inc\assimp\XMLTools.h" />
     <ClInclude Include="inc\assimp\ZipArchiveIOSystem.h" />
+    <ClInclude Include="inc\freetype\freetype\config\ftconfig.h" />
+    <ClInclude Include="inc\freetype\freetype\config\ftheader.h" />
+    <ClInclude Include="inc\freetype\freetype\config\ftmodule.h" />
+    <ClInclude Include="inc\freetype\freetype\config\ftoption.h" />
+    <ClInclude Include="inc\freetype\freetype\config\ftstdlib.h" />
+    <ClInclude Include="inc\freetype\freetype\freetype.h" />
+    <ClInclude Include="inc\freetype\freetype\ftadvanc.h" />
+    <ClInclude Include="inc\freetype\freetype\ftbbox.h" />
+    <ClInclude Include="inc\freetype\freetype\ftbdf.h" />
+    <ClInclude Include="inc\freetype\freetype\ftbitmap.h" />
+    <ClInclude Include="inc\freetype\freetype\ftbzip2.h" />
+    <ClInclude Include="inc\freetype\freetype\ftcache.h" />
+    <ClInclude Include="inc\freetype\freetype\ftchapters.h" />
+    <ClInclude Include="inc\freetype\freetype\ftcid.h" />
+    <ClInclude Include="inc\freetype\freetype\ftdriver.h" />
+    <ClInclude Include="inc\freetype\freetype\fterrdef.h" />
+    <ClInclude Include="inc\freetype\freetype\fterrors.h" />
+    <ClInclude Include="inc\freetype\freetype\ftfntfmt.h" />
+    <ClInclude Include="inc\freetype\freetype\ftgasp.h" />
+    <ClInclude Include="inc\freetype\freetype\ftglyph.h" />
+    <ClInclude Include="inc\freetype\freetype\ftgxval.h" />
+    <ClInclude Include="inc\freetype\freetype\ftgzip.h" />
+    <ClInclude Include="inc\freetype\freetype\ftimage.h" />
+    <ClInclude Include="inc\freetype\freetype\ftincrem.h" />
+    <ClInclude Include="inc\freetype\freetype\ftlcdfil.h" />
+    <ClInclude Include="inc\freetype\freetype\ftlist.h" />
+    <ClInclude Include="inc\freetype\freetype\ftlzw.h" />
+    <ClInclude Include="inc\freetype\freetype\ftmac.h" />
+    <ClInclude Include="inc\freetype\freetype\ftmm.h" />
+    <ClInclude Include="inc\freetype\freetype\ftmodapi.h" />
+    <ClInclude Include="inc\freetype\freetype\ftmoderr.h" />
+    <ClInclude Include="inc\freetype\freetype\ftotval.h" />
+    <ClInclude Include="inc\freetype\freetype\ftoutln.h" />
+    <ClInclude Include="inc\freetype\freetype\ftparams.h" />
+    <ClInclude Include="inc\freetype\freetype\ftpfr.h" />
+    <ClInclude Include="inc\freetype\freetype\ftrender.h" />
+    <ClInclude Include="inc\freetype\freetype\ftsizes.h" />
+    <ClInclude Include="inc\freetype\freetype\ftsnames.h" />
+    <ClInclude Include="inc\freetype\freetype\ftstroke.h" />
+    <ClInclude Include="inc\freetype\freetype\ftsynth.h" />
+    <ClInclude Include="inc\freetype\freetype\ftsystem.h" />
+    <ClInclude Include="inc\freetype\freetype\fttrigon.h" />
+    <ClInclude Include="inc\freetype\freetype\fttypes.h" />
+    <ClInclude Include="inc\freetype\freetype\ftwinfnt.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\autohint.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\cffotypes.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\cfftypes.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\ftcalc.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\ftdebug.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\ftdrv.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\ftgloadr.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\fthash.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\ftmemory.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\ftobjs.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\ftpic.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\ftpsprop.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\ftrfork.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\ftserv.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\ftstream.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\fttrace.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\ftvalid.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\internal.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\psaux.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\pshints.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svbdf.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svcfftl.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svcid.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svfntfmt.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svgldict.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svgxval.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svkern.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svmetric.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svmm.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svotval.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svpfr.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svpostnm.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svprop.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svpscmap.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svpsinfo.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svsfnt.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svttcmap.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svtteng.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svttglyf.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\services\svwinfnt.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\sfnt.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\t1types.h" />
+    <ClInclude Include="inc\freetype\freetype\internal\tttypes.h" />
+    <ClInclude Include="inc\freetype\freetype\t1tables.h" />
+    <ClInclude Include="inc\freetype\freetype\ttnameid.h" />
+    <ClInclude Include="inc\freetype\freetype\tttables.h" />
+    <ClInclude Include="inc\freetype\freetype\tttags.h" />
+    <ClInclude Include="inc\freetype\ft2build.h" />
     <ClInclude Include="inc\glad\glad.h" />
     <ClInclude Include="inc\glfw\glfw3.h" />
     <ClInclude Include="inc\glfw\glfw3native.h" />
@@ -794,6 +902,7 @@
     <ClInclude Include="src\ecs\ComponentManager.h" />
     <ClInclude Include="src\render\EBO.h" />
     <ClInclude Include="src\render\MeshRenderer.h" />
+    <ClInclude Include="src\render\Texture.h" />
     <ClInclude Include="src\render\VBO.h" />
     <ClInclude Include="src\render\Mesh.h" />
     <ClInclude Include="src\render\Model.h" />
@@ -804,6 +913,7 @@
     <ClInclude Include="src\render\VAO.h" />
     <ClInclude Include="src\render\Vertex.h" />
     <ClInclude Include="src\ui\EventSystem.h" />
+    <ClInclude Include="src\ui\UIElement.h" />
     <ClInclude Include="src\util\PerlinNoise.h" />
     <ClInclude Include="src\util\Profiler.h" />
     <ClInclude Include="src\util\Time.h" />
@@ -813,8 +923,18 @@
     <Image Include="res\obj\ao.jpg" />
     <Image Include="res\obj\diffuse.jpg" />
     <Image Include="res\obj\normal.png" />
+    <Image Include="res\obj\peach_castle\CastleAtlas_lit.jpg" />
+    <Image Include="res\obj\peach_castle\GardenAtlas.jpg" />
+    <Image Include="res\obj\peach_castle\TreeAtlas.jpg" />
+    <Image Include="res\obj\peach_castle\Windows.png" />
     <Image Include="res\obj\roughness.jpg" />
     <Image Include="res\obj\specular.jpg" />
+    <Image Include="res\obj\texture.jpg" />
+    <Image Include="res\obj\texture2.jpg" />
+    <Image Include="res\obj\torch\torch.png" />
+    <Image Include="res\obj\tree\bark.jpg" />
+    <Image Include="res\obj\tree\grass.jpg" />
+    <Image Include="res\obj\tree\tree.jpg" />
     <Image Include="res\obj\vault_boy.jpg" />
     <Image Include="res\obj\vault_boy.png" />
     <Image Include="res\textures\awesomeface.png" />
@@ -824,7 +944,25 @@
     <Image Include="res\textures\container2.png" />
     <Image Include="res\textures\container2_specular.png" />
     <Image Include="res\textures\gobbo.png" />
+    <Image Include="res\textures\grass.png" />
+    <Image Include="res\textures\skybox\back.jpg" />
+    <Image Include="res\textures\skybox\bottom.jpg" />
+    <Image Include="res\textures\skybox\front.jpg" />
+    <Image Include="res\textures\skybox\left.jpg" />
+    <Image Include="res\textures\skybox\right.jpg" />
+    <Image Include="res\textures\skybox\top.jpg" />
     <Image Include="res\textures\Ybot.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="res\fonts\arial.ttf" />
+    <Font Include="res\fonts\arialbd.ttf" />
+    <Font Include="res\fonts\arialbi.ttf" />
+    <Font Include="res\fonts\ariali.ttf" />
+    <Font Include="res\fonts\ARIALN.TTF" />
+    <Font Include="res\fonts\ARIALNB.TTF" />
+    <Font Include="res\fonts\ARIALNBI.TTF" />
+    <Font Include="res\fonts\ARIALNI.TTF" />
+    <Font Include="res\fonts\ariblk.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

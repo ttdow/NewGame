@@ -9,7 +9,8 @@ enum PlayerMovement
 	BACKWARD,
 	LEFT,
 	RIGHT,
-	JUMP
+	JUMP,
+	ATTACK
 };
 
 class PlayerController

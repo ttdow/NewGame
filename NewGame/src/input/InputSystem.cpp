@@ -97,12 +97,28 @@ void InputSystem::HandleKeyInput(int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_W)
 	{
-		this->playerController->HandleInput(PlayerMovement::FORWARD);
+		if (action == GLFW_PRESS || action == GLFW_REPEAT)
+		{
+			this->renderingSystem->ChangeAnimation("walk");
+			this->playerController->HandleInput(PlayerMovement::FORWARD);
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			this->renderingSystem->ChangeAnimation("idle");
+		}
 	}
 
 	if (key == GLFW_KEY_S)
 	{
-		this->playerController->HandleInput(PlayerMovement::BACKWARD);
+		if (action == GLFW_PRESS || action == GLFW_REPEAT)
+		{
+			this->renderingSystem->ChangeAnimation("walk");
+			this->playerController->HandleInput(PlayerMovement::BACKWARD);
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			this->renderingSystem->ChangeAnimation("idle");
+		}
 	}
 
 	if (key == GLFW_KEY_D)
@@ -117,7 +133,13 @@ void InputSystem::HandleKeyInput(int key, int scancode, int action, int mods)
 
 	if (key == GLFW_KEY_SPACE)
 	{
-		// TODO Jump logic.
+		this->renderingSystem->ChangeAnimation("jump");
+		this->playerController->HandleInput(PlayerMovement::JUMP);
+	}
+
+	if (key == GLFW_KEY_R)
+	{
+		this->renderingSystem->ChangeAnimation("attack");
 	}
 
 	if (key == GLFW_KEY_0)

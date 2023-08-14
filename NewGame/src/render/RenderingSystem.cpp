@@ -20,6 +20,12 @@ RenderingSystem::RenderingSystem(Window *window)
 	this->volumeLightShader = new Shader("res/shaders/volume_light.vs", "res/shaders/volume_light.fs");
 	this->particleShader = new Shader("res/shaders/particle.vs", "res/shaders/particle.fs");
 	this->colliderShader = new Shader("res/shaders/collider.vs", "res/shaders/collider.fs");
+	this->grassShader = new Shader("res/shaders/grass.vs", "res/shaders/grass.fs");
+	this->uiShader = new Shader("res/shaders/ui.vs", "res/shaders/ui.fs");
+	this->textShader = new Shader("res/shaders/text.vs", "res/shaders/text.fs");
+
+	// UI Elements.
+	this->uiElement = new UIElement();
 
 	// Particles.
 	this->particleGenerator = new ParticleGenerator(glm::vec3(-45.0f, 24.0f, -89.0f), 50, 2.0f);
@@ -27,6 +33,7 @@ RenderingSystem::RenderingSystem(Window *window)
 	// Models.
 	this->treeLevel = new Model("res/obj/tree/tree_level.obj");
 	this->torch = new Model("res/obj/torch/torch.obj");
+	this->spider = new Model("res/obj/spider.fbx");
 
 	stbi_set_flip_vertically_on_load(true);
 	this->gobbo = new Model("res/obj/gobbo.fbx");
@@ -37,6 +44,12 @@ RenderingSystem::RenderingSystem(Window *window)
 	this->gobboIdleAnimator = new Animator(this->gobboIdle);
 	this->gobboAttack = new Animation("res/obj/gobbo_attack.fbx", this->gobbo);
 	this->gobboAttackAnimator = new Animator(this->gobboAttack);
+	this->gobboJump = new Animation("res/obj/gobbo_jump.fbx", this->gobbo);
+	this->gobboJumpAnimator = new Animator(this->gobboJump);
+
+	this->spiderAnimController = new AnimationController();
+	this->spiderMove = new Animation("res/obj/spider.fbx", this->spider);
+	this->spiderMoveAnimator = new Animator(this->spiderMove);
 
 	// Walk animation.
 	std::pair<std::string, Animation*> walkAnim = std::pair<std::string, Animation*>();
@@ -78,6 +91,33 @@ RenderingSystem::RenderingSystem(Window *window)
 
 	this->goblinAnimController->animators.insert(attackAnimator);
 
+	// Jump animation.
+	std::pair<std::string, Animation*> jumpAnim = std::pair<std::string, Animation*>();
+	jumpAnim.first = "jump";
+	jumpAnim.second = this->gobboJump;
+
+	this->goblinAnimController->animations.insert(jumpAnim);
+
+	std::pair<std::string, Animator*> jumpAnimator = std::pair<std::string, Animator*>();
+	jumpAnimator.first = "jumpAnimator";
+	jumpAnimator.second = this->gobboJumpAnimator;
+
+	this->goblinAnimController->animators.insert(jumpAnimator);
+
+	// Spider move animation.
+	std::pair<std::string, Animation*> spiderAnim = std::pair<std::string, Animation*>();
+	spiderAnim.first = "move";
+	spiderAnim.second = this->spiderMove;
+
+	this->spiderAnimController->animations.insert(spiderAnim);
+
+	std::pair<std::string, Animator*> spiderAnimator = std::pair<std::string, Animator*>();
+	spiderAnimator.first = "moveAnimator";
+	spiderAnimator.second = this->spiderMoveAnimator;
+	
+	this->spiderAnimController->animators.insert(spiderAnimator);
+	this->spiderAnimController->Play("move");
+
 	// Setup goblin character.
 	// TODO much of this should be moved to entity/component creation.
 	this->goblin = new Entity("goblin");
@@ -96,6 +136,9 @@ RenderingSystem::RenderingSystem(Window *window)
 
 	// Initialize camera.
 	this->camera = new Camera(this->goblinTransform);
+
+	// Move gobline entity to initial position.
+	this->goblin->GetTransform()->position->z = 150.0f;
 
 	// Skybox.
 	float skyboxVertices[] = {
@@ -169,6 +212,7 @@ RenderingSystem::RenderingSystem(Window *window)
 	unsigned char* data;
 	for (unsigned int i = 0; i < cubeMapTextures.size(); i++)
 	{
+		stbi_set_flip_vertically_on_load(false);
 		data = stbi_load(cubeMapTextures[i].c_str(), &width, &height, &channels, 0);
 		if (data)
 		{
@@ -189,11 +233,19 @@ RenderingSystem::RenderingSystem(Window *window)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	// Grass.
-	this->vegetation.push_back(glm::vec3(-1.5f, 0.0f, 1.00f));
-	this->vegetation.push_back(glm::vec3(1.5f, 0.0f, 1.51f));
-	this->vegetation.push_back(glm::vec3(0.0f, 1.0f, 1.7f));
-	this->vegetation.push_back(glm::vec3(-0.3f, 0.5f, 2.3f));
-	this->vegetation.push_back(glm::vec3(0.5f, 0.0f, 0.6f));
+	for (unsigned int i = 0; i < 50000; i++)
+	{
+		float r0 = (static_cast<float>(rand() / static_cast<float>(RAND_MAX)) - 0.5f) * 500.0f;
+		float r1 = (static_cast<float>(rand() / static_cast<float>(RAND_MAX)) - 0.5f) * 500.0f;
+
+		this->vegetation.push_back(glm::vec3(r0, 2.0f, r1));
+	}
+
+	unsigned int instanceVBO;
+	glGenBuffers(1, &instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * this->vegetation.size(), &this->vegetation[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	float quadVertices[] =
 	{
@@ -216,16 +268,22 @@ RenderingSystem::RenderingSystem(Window *window)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribDivisor(2, 1);
 	glBindVertexArray(0);
 
-	this->grassTexture = TextureFromFile("grass.png", "res/textures/", "texture_diffuse");
+	this->grassTex = new TextureClass("res/textures/grass.png", false);
+	this->grassTex->SetWrapToClamped();
 
 	this->blendShader->Use();
 	this->blendShader->SetInt("texture1", 0);
 
 	this->particleShader->Use();
 	this->particleShader->SetInt("texture", 0);
-
+	
 	// Collider test.
 	this->boxCollider = new BoxCollider();
 	glGenVertexArrays(1, &this->boxCollider->vao);
@@ -253,9 +311,12 @@ RenderingSystem::~RenderingSystem()
 	delete(this->volumeLightShader);
 	delete(this->particleShader);
 	delete(this->colliderShader);
+	delete(this->grassShader);
+	delete(this->uiShader);
+	delete(this->textShader);
 
-	delete(this->ourModel);
-	delete(this->modelTwo);
+	delete(this->uiElement);
+
 	delete(this->treeLevel);
 	delete(this->torch);
 
@@ -264,6 +325,11 @@ RenderingSystem::~RenderingSystem()
 	delete(this->gobboWalkAnimator);
 	delete(this->gobboIdle);
 	delete(this->gobboIdleAnimator);
+	delete(this->gobboJump);
+	delete(this->gobboJumpAnimator);
+
+	delete(this->spiderMove);
+	delete(this->spiderMoveAnimator);
 
 	delete(this->testRenderer);
 	delete(this->testTransform);
@@ -274,6 +340,7 @@ RenderingSystem::~RenderingSystem()
 	delete(this->goblin);
 
 	delete(this->goblinAnimController);
+	delete(this->spiderAnimController);
 
 	delete(this->camera);
 
@@ -302,9 +369,15 @@ void RenderingSystem::Update()
 	// Lighting data.
 	glm::vec3 lightDir = glm::normalize(glm::vec3(0.0f, -1.0f, 1.0f));
 	glm::vec3 lightPos = glm::vec3(0.0f, 10.0f, 5.0f);
-	glm::vec3 lightAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
+	glm::vec3 lightAmbient = glm::vec3(0.15f, 0.15f, 0.15f);
 	glm::vec3 lightDiffuse = glm::vec3(0.4f, 0.4f, 0.4f);
 	glm::vec3 lightSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
+
+	glm::vec3 pointLightPos = glm::vec3(-45.0f, 20.0f, -89.0f);
+	glm::vec3 pointLightAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
+	glm::vec3 pointLightDiffuse = glm::vec3(0.8f, 0.8f, 0.8f);
+	glm::vec3 pointLightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
+	float pointLightIntensity = this->noiseMaker->Noise(glfwGetTime());
 
 	// Draw goblin.
 	this->goblin->GetRenderer()->AnimUpdate(projection,
@@ -315,44 +388,27 @@ void RenderingSystem::Update()
 											lightDiffuse,
 											lightSpecular,
 											this->goblinAnimController);
-	
-	glm::vec3 pointLightPos = glm::vec3(-45.0f, 20.0f, -89.0f);
-	glm::vec3 pointLightAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
-	glm::vec3 pointLightDiffuse = glm::vec3(0.8f, 0.8f, 0.8f);
-	glm::vec3 pointLightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
-	float pointLightIntensity = this->noiseMaker->Noise(glfwGetTime());
 
-	/*
-	// Draw goblin clone.
+	// Draw spider.
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-	model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-	glm::mat4 goblinCloneModel = model;
-	this->standardShader->Use();
-	this->standardShader->SetMat4("model", this->goblinTransform->modelMatrix);
-	this->standardShader->SetMat4("view", view);
-	this->standardShader->SetMat4("projection", projection);
-	this->standardShader->SetVec3("viewPos", camera->position);
-	this->standardShader->SetFloat("material.shininess", 32.0);
-	this->standardShader->SetInt("material.diffuse", 0);
-	this->standardShader->SetInt("material.specular", 0);
-	this->standardShader->SetVec3("directionalLight.direction", lightDir);
-	this->standardShader->SetVec3("directionalLight.ambient", lightAmbient);
-	this->standardShader->SetVec3("directionalLight.diffuse", lightDiffuse);
-	this->standardShader->SetVec3("directionalLight.specular", lightSpecular);
-	this->standardShader->SetVec3("pointLight.position", pointLightPos + glm::vec3(0.0f, 5.0f, 0.0f));
-	this->standardShader->SetVec3("pointLight.ambient", pointLightAmbient);
-	this->standardShader->SetVec3("pointLight.diffuse", pointLightDiffuse);
-	this->standardShader->SetVec3("pointLight.specular", pointLightSpecular);
-	this->standardShader->SetFloat("pointLight.constant", 1.0f);
-	this->standardShader->SetFloat("pointLight.linear", 0.1f);
-	this->standardShader->SetFloat("pointLight.quadratic", 0.001f);
-	this->standardShader->SetFloat("pointLight.intensity", pointLightIntensity);
+	model = glm::translate(model, glm::vec3(10.0f, 0.0f, 150.0f));
+	model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(15.0f, 15.0f, 15.0f));
+	this->animShader->Use();
+	this->animShader->SetMat4("model", model);
+	this->animShader->SetMat4("view", view);
+	this->animShader->SetMat4("projection", projection);
+	this->animShader->SetVec3("viewPos", camera->position);
+	this->animShader->SetFloat("material.shininess", 32.0);
+	this->animShader->SetInt("material.diffuse", 0);
+	this->animShader->SetInt("material.specular", 0);
+	this->animShader->SetVec3("directionalLight.direction", lightDir);
+	this->animShader->SetVec3("directionalLight.ambient", lightAmbient);
+	this->animShader->SetVec3("directionalLight.diffuse", lightDiffuse);
+	this->animShader->SetVec3("directionalLight.specular", lightSpecular);
 
-	this->gobbo->Draw(*this->standardShader);
-	*/
+	this->spider->Draw(*this->animShader);
 
-	/*
 	// Draw the tree level.
 	model = glm::mat4(1.0f);
 	this->standardShader->Use();
@@ -377,7 +433,6 @@ void RenderingSystem::Update()
 	this->standardShader->SetFloat("pointLight.intensity", pointLightIntensity);
 
 	this->treeLevel->Draw(*this->standardShader);
-	*/
 
 	// TODO Volumetric lighting test.
 	/*
@@ -398,26 +453,14 @@ void RenderingSystem::Update()
 	this->treeLevel->Draw(*this->volumeLightShader);
 	*/
 
-	/*
 	// Grass.
-	this->blendShader->Use();
-	this->blendShader->SetMat4("projection", projection);
-	this->blendShader->SetMat4("view", view);
+	this->grassShader->Use();
+	this->grassShader->SetMat4("projection", projection);
+	this->grassShader->SetMat4("view", view);
 	glBindVertexArray(this->blendVAO);
-
-	glBindTexture(GL_TEXTURE_2D, this->grassTexture);
-
-	for (unsigned int i = 0; i < this->vegetation.size(); i++)
-	{
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, this->vegetation[i]);
-		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
-		this->blendShader->SetMat4("model", model);
-
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
-	}
-	*/
-
+	glBindTexture(GL_TEXTURE_2D, this->grassTex->GetID());
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, this->vegetation.size());
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindVertexArray(0);
 
 	// Flames.
@@ -441,6 +484,34 @@ void RenderingSystem::Update()
 	}
 
 	glBindVertexArray(0);
+
+	// UI elements.
+	/*
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.75f, 0.0f, 0.0f));
+	model = glm::scale(model, glm::vec3(0.25f, 1.0f, 0.5f));
+	glm::vec4 color = glm::vec4(0.125f, 0.125f, 0.125f, 1.0f);
+	this->uiShader->Use();
+	this->uiShader->SetMat4("model", model);
+	this->uiShader->SetVec4("color", color);
+	glBindVertexArray(this->blendVAO);
+	glBindTexture(GL_TEXTURE_2D, this->particleTexture);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+	*/
+
+	// Text.
+	/*
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glm::mat4 orthoProjection = glm::ortho(0.0f, static_cast<float>(this->windowWidth), 0.0f, static_cast<float>(this->windowHeight));
+	model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+	this->textShader->Use();
+	this->textShader->SetMat4("projection", orthoProjection);
+	this->textShader->SetMat4("model", model);
+	this->uiElement->RenderText(this->textShader, "X", 100.0f, 100.0f, 100.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+	*/
 
 	// Torches.
 	model = glm::translate(glm::mat4(1.0f), pointLightPos + glm::vec3(0.0f, -2.0f, 0.0f));
@@ -469,7 +540,6 @@ void RenderingSystem::Update()
 	this->torch->Draw(*this->standardShader);
 	
 	// Collider 1 visualization.
-
 	this->boxCollider->center = glm::vec3(this->goblinTransform->modelMatrix[3][0],
 										  this->goblinTransform->modelMatrix[3][1] + 5.0f,
 										  this->goblinTransform->modelMatrix[3][2] + 2.0f);

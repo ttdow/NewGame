@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures, bool animated)
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<TextureClass> textures, bool animated)
 {
     this->vertices = vertices;
     this->indices = indices;
@@ -21,11 +21,12 @@ void Mesh::Draw(Shader& shader)
 
     for (unsigned int i = 0; i < textures.size(); i++)
     {
-        glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
+        // Activate the proper texture unit before binding.
+        glActiveTexture(GL_TEXTURE0 + i);
         
         // Retrieve texture number (the N in diffuse_textureN).
         std::string number;
-        std::string name = textures[i].type;
+        std::string name = textures[i].GetType();
 
         if (name == "texture_diffuse")
             number = std::to_string(diffuseNr++);
@@ -40,7 +41,7 @@ void Mesh::Draw(Shader& shader)
         glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
 
         // and finally bind the texture
-        glBindTexture(GL_TEXTURE_2D, textures[i].ID);
+        glBindTexture(GL_TEXTURE_2D, textures[i].GetID());
     }
 
     // Draw call for this mesh.
