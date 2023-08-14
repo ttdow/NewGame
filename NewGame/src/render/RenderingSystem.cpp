@@ -238,6 +238,9 @@ RenderingSystem::RenderingSystem(Window *window)
 	glBindVertexArray(0);
 
 	this->boxCollider2 = new BoxCollider();
+
+	this->boxCollider->extents = glm::vec3(0.5f, 0.5f, 0.5f);
+	this->boxCollider2->extents = glm::vec3(0.5f, 0.5f, 0.5f);
 }
 
 RenderingSystem::~RenderingSystem()
@@ -466,11 +469,13 @@ void RenderingSystem::Update()
 	this->torch->Draw(*this->standardShader);
 	
 	// Collider 1 visualization.
+
+	this->boxCollider->center = glm::vec3(this->goblinTransform->modelMatrix[3][0],
+										  this->goblinTransform->modelMatrix[3][1] + 5.0f,
+										  this->goblinTransform->modelMatrix[3][2] + 2.0f);
+
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(this->goblinTransform->modelMatrix[3][0], 
-											this->goblinTransform->modelMatrix[3][1] + 5.0f, 
-										    this->goblinTransform->modelMatrix[3][2] + 2.0f));
-	this->boxCollider->center = 
+	model = glm::translate(model, this->boxCollider->center);
 
 	this->colliderShader->Use();
 	this->colliderShader->SetMat4("model", model);
@@ -482,8 +487,10 @@ void RenderingSystem::Update()
 	glBindVertexArray(0);
 
 	// Collider 2 visualization.
+	this->boxCollider2->center = glm::vec3(5.0f, 5.0f, 2.0f);
+
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(5.0f, 5.0f, 2.0f));
+	model = glm::translate(model, this->boxCollider2->center);
 	this->colliderShader->Use();
 	this->colliderShader->SetMat4("model", model);
 	this->colliderShader->SetMat4("view", view);
@@ -492,6 +499,9 @@ void RenderingSystem::Update()
 	glBindVertexArray(this->boxCollider->vao);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
+
+	// Test for box collider collisions.
+	this->boxCollider->CheckCollision(this->boxCollider2);
 
 	// Draw skybox last.
 	glDepthFunc(GL_LEQUAL);
