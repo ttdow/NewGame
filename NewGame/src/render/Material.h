@@ -3,11 +3,11 @@
 #include "Shader.h"
 #include "Texture.h"
 
+#include <string>
+
 class Material
 {
 public:
-
-	Shader* shader;
 
 	TextureClass* albedo;
 	TextureClass* normal;
@@ -15,6 +15,6 @@ public:
 	TextureClass* roughness;
 	TextureClass* ao;
 
-	void SetMaterial();
-
+	Material(std::string dir);
+	void BindMaterial();
 };

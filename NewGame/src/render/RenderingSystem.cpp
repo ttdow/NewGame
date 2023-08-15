@@ -309,23 +309,13 @@ RenderingSystem::RenderingSystem(Window *window)
 	this->pbrShader->SetInt("roughnessMap", 3);
 	this->pbrShader->SetInt("aoMap", 4);
 
-	this->albedo = new TextureClass("res/textures/rusted_metal/albedo.png", false);
-	this->normal = new TextureClass("res/textures/rusted_metal/normal.png", false);
-	this->metallic = new TextureClass("res/textures/rusted_metal/metallic.png", false);
-	this->roughness = new TextureClass("res/textures/rusted_metal/roughness.png", false);
-	this->ao = new TextureClass("res/textures/rusted_metal/ao.png", false);
+	this->rustedMetalMaterial = new Material("res/textures/rusted_metal/");
 
 	this->sphereVAO = 0;
 }
 
 RenderingSystem::~RenderingSystem()
 {
-	delete(this->albedo);
-	delete(this->normal);
-	delete(this->metallic);
-	delete(this->roughness);
-	delete(this->ao);
-
 	delete(this->ourShader);
 	delete(this->standardShader);
 	delete(this->animShader);
@@ -663,7 +653,6 @@ void RenderingSystem::Update()
 
 	this->torch->Draw(*this->standardShader);
 	
-	/*
 	// Collider 1 visualization.
 	this->boxCollider->center = glm::vec3(this->goblinTransform->modelMatrix[3][0],
 										  this->goblinTransform->modelMatrix[3][1] + 5.0f,
@@ -697,7 +686,6 @@ void RenderingSystem::Update()
 
 	// Test for box collider collisions.
 	this->boxCollider->CheckCollision(this->boxCollider2);
-	*/
 
 	// PBR material shader test.
 	glm::vec3 lightPositions[] =
@@ -721,21 +709,9 @@ void RenderingSystem::Update()
 	float spacing = 2.5f;
 
 	this->pbrShader->Use();
-	this->pbrShader->SetMat4("projection", projection);
-	this->pbrShader->SetMat4("view", view);
-	this->pbrShader->SetVec3("cameraPos", this->camera->position);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, this->albedo->GetID());
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, this->normal->GetID());
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, this->metallic->GetID());
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, this->roughness->GetID());
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, this->ao->GetID());
-
+	this->pbrShader->SetCamera(this->camera, windowWidth, windowHeight);
+	this->rustedMetalMaterial->BindMaterial();
+	
 	for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); i++)
 	{
 		this->pbrShader->SetVec3("lightPositions[" + std::to_string(i) + "]", lightPositions[i]);
@@ -746,12 +722,8 @@ void RenderingSystem::Update()
 	model = glm::mat4(1.0f);
 	for (int row = 0; row < nrRows; row++)
 	{
-		//this->pbrShader->SetFloat("metallic", (float)row / (float)nrRows);
 		for (int col = 0; col < nrCols; col++)
 		{
-			// We clamp the roughness to 0.05 - 1.0 as perfectly smooth surfaces (roughness of 0.0) tend to look a bit off.
-			//this->pbrShader->SetFloat("roughness", glm::clamp((float)col / (float)nrCols, 0.05f, 1.0f));
-
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, glm::vec3((col - (nrCols / 2)) * spacing, (row - (nrRows / 2)) * spacing + 10.0f, 150.0f));
 

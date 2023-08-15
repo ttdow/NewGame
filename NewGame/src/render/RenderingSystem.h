@@ -20,6 +20,7 @@
 #include "../phys/BoxCollider.h"
 #include "../ui/UIElement.h"
 #include "Texture.h"
+#include "Material.h"
 
 #include "../ecs/Entity.h"
 #include "../ecs/Transform.h"
@@ -51,11 +52,7 @@ private:
 	UIElement* uiElement;
 
 	TextureClass* grassTex;
-	TextureClass* albedo;
-	TextureClass* normal;
-	TextureClass* metallic;
-	TextureClass* roughness;
-	TextureClass* ao;
+	Material* rustedMetalMaterial;
 
 	ParticleGenerator* particleGenerator;
 
