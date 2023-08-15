@@ -186,6 +186,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\render\CubeVertices.cpp" />
     <ClCompile Include="src\render\EBO.cpp" />
+    <ClCompile Include="src\render\Material.cpp" />
     <ClCompile Include="src\render\Mesh.cpp" />
     <ClCompile Include="src\render\MeshRenderer.cpp" />
     <ClCompile Include="src\render\Model.cpp" />
@@ -399,6 +400,8 @@
     <None Include="res\shaders\normal_map.vs" />
     <None Include="res\shaders\particle.fs" />
     <None Include="res\shaders\particle.vs" />
+    <None Include="res\shaders\pbr.fs" />
+    <None Include="res\shaders\pbr.vs" />
     <None Include="res\shaders\skybox.fs" />
     <None Include="res\shaders\skybox.vs" />
     <None Include="res\shaders\standard.fs" />
@@ -901,6 +904,7 @@
     <ClInclude Include="src\render\Camera.h" />
     <ClInclude Include="src\ecs\ComponentManager.h" />
     <ClInclude Include="src\render\EBO.h" />
+    <ClInclude Include="src\render\Material.h" />
     <ClInclude Include="src\render\MeshRenderer.h" />
     <ClInclude Include="src\render\Texture.h" />
     <ClInclude Include="src\render\VBO.h" />
@@ -945,6 +949,10 @@
     <Image Include="res\textures\container2_specular.png" />
     <Image Include="res\textures\gobbo.png" />
     <Image Include="res\textures\grass.png" />
+    <Image Include="res\textures\rusted_metal\rustediron2_basecolor.png" />
+    <Image Include="res\textures\rusted_metal\rustediron2_metallic.png" />
+    <Image Include="res\textures\rusted_metal\rustediron2_normal.png" />
+    <Image Include="res\textures\rusted_metal\rustediron2_roughness.png" />
     <Image Include="res\textures\skybox\back.jpg" />
     <Image Include="res\textures\skybox\bottom.jpg" />
     <Image Include="res\textures\skybox\front.jpg" />

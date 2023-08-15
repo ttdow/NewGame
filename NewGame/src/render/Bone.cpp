@@ -72,6 +72,7 @@ int Bone::GetPositionIndex(float animationTime)
 		}
 	}
 
+	return 0;
 	assert(0);
 }
 
@@ -85,6 +86,7 @@ int Bone::GetRotationIndex(float animationTime)
 		}
 	}
 
+	return 0;
 	assert(0);
 }
 
@@ -98,6 +100,7 @@ int Bone::GetScaleIndex(float animationTime)
 		}
 	}
 
+	return 0;
 	assert(0);
 }
 

@@ -18,8 +18,8 @@
 #include "../util/PerlinNoise.h"
 #include "../particle/ParticleGenerator.h"
 #include "../phys/BoxCollider.h"
-#include "Texture.h"
 #include "../ui/UIElement.h"
+#include "Texture.h"
 
 #include "../ecs/Entity.h"
 #include "../ecs/Transform.h"
@@ -46,10 +46,16 @@ private:
 	Shader* grassShader;
 	Shader* uiShader;
 	Shader* textShader;
+	Shader* pbrShader;
 
 	UIElement* uiElement;
 
 	TextureClass* grassTex;
+	TextureClass* albedo;
+	TextureClass* normal;
+	TextureClass* metallic;
+	TextureClass* roughness;
+	TextureClass* ao;
 
 	ParticleGenerator* particleGenerator;
 
@@ -75,6 +81,8 @@ private:
 	unsigned int blendVAO, blendVBO;
 	unsigned int grassTexture;
 	unsigned int particleTexture;
+	unsigned int sphereVAO, sphereVBO, sphereEBO;
+	unsigned int indexCount;
 
 	int windowWidth;
 	int windowHeight;
@@ -82,6 +90,8 @@ private:
 	std::vector<glm::vec3> vegetation;
 
 	PerlinNoise* noiseMaker;
+
+	void RenderSphere();
 
 public:
 	

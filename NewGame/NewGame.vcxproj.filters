@@ -138,6 +138,9 @@
     <ClCompile Include="src\ui\UIElement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\render\Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\glfw\glfw3.lib" />
@@ -636,6 +639,8 @@
     <None Include="freetype.pdb" />
     <None Include="res\shaders\text.vs" />
     <None Include="res\shaders\text.fs" />
+    <None Include="res\shaders\pbr.fs" />
+    <None Include="res\shaders\pbr.vs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\glad\glad.h">
@@ -2156,6 +2161,9 @@
     <ClInclude Include="src\ui\UIElement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\render\Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\container.jpg">
@@ -2252,6 +2260,18 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\textures\skybox\top.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\rusted_metal\rustediron2_basecolor.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\rusted_metal\rustediron2_metallic.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\rusted_metal\rustediron2_normal.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\textures\rusted_metal\rustediron2_roughness.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
