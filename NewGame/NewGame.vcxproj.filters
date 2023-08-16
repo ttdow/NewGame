@@ -598,7 +598,6 @@
     </None>
     <None Include="lib\assimp\assimp-vc142-mtd.exp" />
     <None Include="assimp-vc142-mtd.dll" />
-    <None Include="assimp-vc142-mtd.pdb" />
     <None Include="res\obj\backpack.mtl" />
     <None Include="res\shaders\model_loading.vs" />
     <None Include="res\shaders\model_loading.fs" />
@@ -639,7 +638,6 @@
     <None Include="res\shaders\ui.vs" />
     <None Include="res\shaders\ui.fs" />
     <None Include="freetype.dll" />
-    <None Include="freetype.pdb" />
     <None Include="res\shaders\text.vs" />
     <None Include="res\shaders\text.fs" />
     <None Include="res\shaders\pbr.fs" />

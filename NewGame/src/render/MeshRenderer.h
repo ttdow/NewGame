@@ -20,5 +20,9 @@ public:
 	MeshRenderer(Shader* shader, Model* model);
 
 	void Update(glm::mat4 projection, glm::mat4 view);
-	void AnimUpdate(glm::mat4 projection, glm::mat4 view, glm::vec3 cameraPos, glm::vec3 lightDir, glm::vec3 lightAmbient, glm::vec3 lightDiffuse, glm::vec3 lightSpecular, AnimationController* controller);
+	void AnimUpdate(glm::mat4 projection, glm::mat4 view, glm::vec3 cameraPos, 
+					glm::vec3 lightDir, glm::vec3 lightAmbient, glm::vec3 lightDiffuse, 
+					glm::vec3 lightSpecular, AnimationController* controller, glm::vec3 pointLightPos, 
+					glm::vec3 pointLightAmbient, glm::vec3 poinLightDiffuse,
+					glm::vec3 pointLightSpecular, float pointLightInstensity);
 };

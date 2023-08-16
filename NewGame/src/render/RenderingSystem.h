@@ -42,7 +42,6 @@ private:
 	Shader* ourShader;
 	Shader* standardShader;
 	Shader* animShader;
-	//Shader* skyboxShader;
 	Shader* blendShader;
 	Shader* volumeLightShader;
 	Shader* particleShader;
@@ -61,6 +60,7 @@ private:
 
 	Model* gobbo;
 	Model* spider;
+	Model* torch;
 
 	AnimationController* goblinAnimController;
 	Animation* gobboWalk;
@@ -76,11 +76,7 @@ private:
 	Animation* spiderMove;
 	Animator* spiderMoveAnimator;
 
-	unsigned int textureId;
-	unsigned int skyboxVAO, skyboxVBO;
 	unsigned int blendVAO, blendVBO;
-	unsigned int grassTexture;
-	unsigned int particleTexture;
 	unsigned int sphereVAO, sphereVBO, sphereEBO;
 	unsigned int indexCount;
 
@@ -95,13 +91,7 @@ private:
 
 public:
 	
-	Model* peachCastle;
 	Model* treeLevel;
-	Model* torch;
-
-	MeshRenderer* testRenderer;
-	Entity* backpack;
-	Transform* testTransform;
 
 	Entity* goblin;
 	MeshRenderer* goblinRenderer;

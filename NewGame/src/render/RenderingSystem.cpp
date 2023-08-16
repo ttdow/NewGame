@@ -28,7 +28,7 @@ RenderingSystem::RenderingSystem(Window *window)
 	this->uiElement = new UIElement();
 
 	// Particles.
-	this->particleGenerator = new ParticleGenerator(glm::vec3(-45.0f, 24.0f, -89.0f), 50, 2.0f);
+	this->particleGenerator = new ParticleGenerator(glm::vec3(-39.7893f, 22.0f, 25.2649f), 50, 2.0f);
 	
 	// Models.
 	this->treeLevel = new Model("res/obj/tree/tree_level.obj");
@@ -222,10 +222,14 @@ RenderingSystem::RenderingSystem(Window *window)
 	this->rustedMetalMaterial = new Material("res/textures/rusted_metal/");
 
 	this->sphereVAO = 0;
+
+	// Spheres.
+	this->indexCount = 0;
 }
 
 RenderingSystem::~RenderingSystem()
 {
+	// Clean up shader programs.
 	delete(this->ourShader);
 	delete(this->standardShader);
 	delete(this->animShader);
@@ -238,43 +242,43 @@ RenderingSystem::~RenderingSystem()
 	delete(this->textShader);
 	delete(this->pbrShader);
 
-	delete(this->uiElement);
-
+	// Clean up models.
 	delete(this->treeLevel);
 	delete(this->torch);
-
 	delete(this->gobbo);
+	delete(this->spider);
+
+	// Clean up animations.
 	delete(this->gobboWalk);
 	delete(this->gobboWalkAnimator);
 	delete(this->gobboIdle);
 	delete(this->gobboIdleAnimator);
 	delete(this->gobboJump);
 	delete(this->gobboJumpAnimator);
-
 	delete(this->spiderMove);
 	delete(this->spiderMoveAnimator);
 
-	delete(this->testRenderer);
-	delete(this->testTransform);
-	delete(this->goblinRenderer);
-	delete(this->goblinTransform);
-
-	delete(this->backpack);
-	delete(this->goblin);
-
+	// Clean up animation controllers.
 	delete(this->goblinAnimController);
 	delete(this->spiderAnimController);
 
+	// Clean up entities and components.
+	delete(this->goblin);
+	delete(this->goblinRenderer);
+	delete(this->goblinTransform);
+
+	// Clean up other misc.
 	delete(this->camera);
-
 	delete(this->noiseMaker);
-
 	delete(this->particleGenerator);
+	delete(this->skybox);
 
+	// Clean up box collider tests.
 	delete(this->boxCollider);
 	delete(this->boxCollider2);
 
-	delete(this->skybox);
+	// Clean up text rendering test.
+	delete(this->uiElement);
 }
 
 void RenderingSystem::RenderSphere()
@@ -394,15 +398,18 @@ void RenderingSystem::Update()
 	// Lighting data.
 	glm::vec3 lightDir = glm::normalize(glm::vec3(0.0f, -1.0f, 1.0f));
 	glm::vec3 lightPos = glm::vec3(0.0f, 10.0f, 5.0f);
-	glm::vec3 lightAmbient = glm::vec3(0.15f, 0.15f, 0.15f);
+	glm::vec3 lightAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
 	glm::vec3 lightDiffuse = glm::vec3(0.4f, 0.4f, 0.4f);
 	glm::vec3 lightSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
 
-	glm::vec3 pointLightPos = glm::vec3(-45.0f, 20.0f, -89.0f);
+	glm::vec3 pointLightPos = glm::vec3(-39.7893f, 17.5171f, 25.2649f);
 	glm::vec3 pointLightAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
 	glm::vec3 pointLightDiffuse = glm::vec3(0.8f, 0.8f, 0.8f);
 	glm::vec3 pointLightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
 	float pointLightIntensity = this->noiseMaker->Noise(glfwGetTime());
+
+	glm::vec3 goblinPos = *this->goblinTransform->position;
+	std::cout << "(" << goblinPos.x << ", " << goblinPos.y << ", " << goblinPos.z << ")" << std::endl;
 
 	// Draw goblin.
 	this->goblin->GetRenderer()->AnimUpdate(projection,
@@ -412,7 +419,12 @@ void RenderingSystem::Update()
 											lightAmbient,
 											lightDiffuse,
 											lightSpecular,
-											this->goblinAnimController);
+											this->goblinAnimController,
+											pointLightPos,
+											pointLightAmbient,
+											pointLightDiffuse,
+											pointLightSpecular,
+											pointLightIntensity);
 
 	// Draw spider.
 	model = glm::mat4(1.0f);
@@ -430,6 +442,15 @@ void RenderingSystem::Update()
 	this->animShader->SetVec3("directionalLight.ambient", lightAmbient);
 	this->animShader->SetVec3("directionalLight.diffuse", lightDiffuse);
 	this->animShader->SetVec3("directionalLight.specular", lightSpecular);
+	this->animShader->SetVec3("pointLight.position", pointLightPos + glm::vec3(0.0f, 5.0f, 0.0f));
+	this->animShader->SetVec3("pointLight.ambient", pointLightAmbient);
+	this->animShader->SetVec3("pointLight.diffuse", pointLightDiffuse);
+	this->animShader->SetVec3("pointLight.specular", pointLightSpecular);
+	this->animShader->SetFloat("pointLight.constant", 1.0f);
+	this->animShader->SetFloat("pointLight.linear", 0.1f);
+	this->animShader->SetFloat("pointLight.quadratic", 0.001f);
+	this->animShader->SetFloat("pointLight.intensity", pointLightIntensity);
+
 	this->spiderAnimController->Update(this->animShader);
 
 	this->spider->Draw(*this->animShader);
@@ -493,8 +514,9 @@ void RenderingSystem::Update()
 	this->particleShader->Use();
 	this->particleShader->SetMat4("projection", projection);
 	this->particleShader->SetMat4("view", view);
+	
 	glBindVertexArray(this->blendVAO);
-	glBindTexture(GL_TEXTURE_2D, this->particleTexture);
+	//glBindTexture(GL_TEXTURE_2D, this->particleTexture);
 
 	for (unsigned int i = 0; i < this->particleGenerator->particles.size(); i++)
 	{

@@ -47,14 +47,14 @@ uniform PointLight pointLight;
 vec3 CalcDirectionalLighting(DirectionalLight light, vec3 color, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(-light.direction);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
 
     // Diffuse shading.
     float diffuseFactor = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = light.diffuse * diffuseFactor * color;
 
     // Specular shading.
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    float specularFactor = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
     vec3 specular = light.specular * specularFactor * color;
 
     return (diffuse + specular);
@@ -63,6 +63,7 @@ vec3 CalcDirectionalLighting(DirectionalLight light, vec3 color, vec3 normal, ve
 vec3 CalcPointLighting(PointLight light, vec3 fragPos, vec3 color, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(light.position - fragPos);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
 
     // Attenuation.
     float distance = length(light.position - fragPos);
@@ -75,7 +76,7 @@ vec3 CalcPointLighting(PointLight light, vec3 fragPos, vec3 color, vec3 normal, 
 
     // Specular shading.
     vec3 reflectDir = reflect(-lightDir, normal);
-    float specularFactor = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    float specularFactor = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
     vec3 specular = light.specular * specularFactor * color * attenuation;
 
     // Ambient shading.
@@ -94,8 +95,8 @@ void main()
     vec3 viewDir = normalize(viewPos - fragPos);
 
     // Directional lighting.
-    //vec3 result = CalcDirectionalLighting(directionalLight, color, norm, viewDir);
-    vec3 result = CalcPointLighting(pointLight, fragPos, vec3(1.0, 0.0, 0.0), norm, viewDir);
+    vec3 result = CalcDirectionalLighting(directionalLight, color, norm, viewDir);
+    result += CalcPointLighting(pointLight, fragPos, vec3(1.0, 0.0, 0.0), norm, viewDir);
 
     // Ambient lighting.
     vec3 ambient = directionalLight.ambient * color * 3.0;
