@@ -192,6 +192,7 @@
     <ClCompile Include="src\render\Model.cpp" />
     <ClCompile Include="src\render\RenderingSystem.cpp" />
     <ClCompile Include="src\render\Shader.cpp" />
+    <ClCompile Include="src\render\Skybox.cpp" />
     <ClCompile Include="src\render\Texture.cpp" />
     <ClCompile Include="src\render\VAO.cpp" />
     <ClCompile Include="src\render\VBO.cpp" />
@@ -906,6 +907,7 @@
     <ClInclude Include="src\render\EBO.h" />
     <ClInclude Include="src\render\Material.h" />
     <ClInclude Include="src\render\MeshRenderer.h" />
+    <ClInclude Include="src\render\Skybox.h" />
     <ClInclude Include="src\render\Texture.h" />
     <ClInclude Include="src\render\VBO.h" />
     <ClInclude Include="src\render\Mesh.h" />

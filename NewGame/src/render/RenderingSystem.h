@@ -21,6 +21,7 @@
 #include "../ui/UIElement.h"
 #include "Texture.h"
 #include "Material.h"
+#include "Skybox.h"
 
 #include "../ecs/Entity.h"
 #include "../ecs/Transform.h"
@@ -33,13 +34,15 @@ private:
 	Window* window;
 	Camera* camera;
 
+	Skybox* skybox;
+
 	BoxCollider* boxCollider;
 	BoxCollider* boxCollider2;
 
 	Shader* ourShader;
 	Shader* standardShader;
 	Shader* animShader;
-	Shader* skyboxShader;
+	//Shader* skyboxShader;
 	Shader* blendShader;
 	Shader* volumeLightShader;
 	Shader* particleShader;
