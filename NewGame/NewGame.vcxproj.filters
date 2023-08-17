@@ -144,11 +144,17 @@
     <ClCompile Include="src\render\Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\audio\AudioSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\glfw\glfw3.lib" />
     <Library Include="lib\assimp\assimp-vc142-mtd.lib" />
     <Library Include="lib\freetype\freetype.lib" />
+    <Library Include="lib\openAL\common.lib" />
+    <Library Include="lib\openAL\ex-common.lib" />
+    <Library Include="lib\openAL\OpenAL32.lib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\glfw\glfw3.pdb" />
@@ -642,6 +648,7 @@
     <None Include="res\shaders\text.fs" />
     <None Include="res\shaders\pbr.fs" />
     <None Include="res\shaders\pbr.vs" />
+    <None Include="OpenAL32.dll" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\glad\glad.h">
@@ -2166,6 +2173,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\render\Skybox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\audio\AudioSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\audio\AudioClip.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

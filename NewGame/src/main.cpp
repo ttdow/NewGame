@@ -13,6 +13,7 @@
 #include "input/PlayerController.h"
 #include "phys/PhysicsSystem.h"
 #include "util/PerlinNoise.h"
+#include "audio/AudioSystem.h"
 
 std::vector<glm::vec3> BSpline(std::vector<glm::vec3>& controlPoints)
 {
@@ -171,6 +172,9 @@ int main()
 	//std::cout << testState->name << std::endl;
 	//stateManager.Initialize(testState);
 
+	AudioSystem audioSystem;
+	audioSystem.Load("test.wav");
+
 	// ------------------------------ GAME LOOP -------------------------------
 	while (!myWindow->ShouldClose())
 	{
@@ -188,6 +192,9 @@ int main()
 
 		// Render.
 		renderingSystem->Update();
+
+		// Audio.
+		audioSystem.UpdateStream();
 	}
 
 	delete(physicsSystem);
