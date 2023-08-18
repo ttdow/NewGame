@@ -24,5 +24,6 @@ public:
 					glm::vec3 lightDir, glm::vec3 lightAmbient, glm::vec3 lightDiffuse, 
 					glm::vec3 lightSpecular, AnimationController* controller, glm::vec3 pointLightPos, 
 					glm::vec3 pointLightAmbient, glm::vec3 poinLightDiffuse,
-					glm::vec3 pointLightSpecular, float pointLightInstensity);
+					glm::vec3 pointLightSpecular, float pointLightInstensity,
+					glm::mat4 lightSpaceMatrix);
 };

@@ -5,9 +5,12 @@ layout (location = 1) in vec2 aTexCoord;
 layout (location = 2) in vec3 aTranslation;
 
 out vec2 texCoord;
+out vec4 fragPosLightSpace;
+out vec3 normal;
 
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 lightSpaceMatrix;
 
 void main()
 {
@@ -22,6 +25,16 @@ void main()
 	billboardTransform[0][0] *= 2.0;
 	billboardTransform[1][1] *= 2.0;
 	billboardTransform[2][2] *= 2.0;
+
+	mat4 model = mat4(1.0);
+	model[3][0] = aTranslation.x;
+	model[3][1] = aTranslation.y;
+	model[3][2] = aTranslation.z;
+
+	vec4 fragPos = model * vec4(aPos, 1.0);
+	fragPosLightSpace = lightSpaceMatrix * fragPos;
+
+	normal = mat3(billboardTransform) * vec3(0.0, 1.0, 0.0);
 
 	gl_Position = projection * view * billboardTransform * vec4(aPos, 1.0);
 }

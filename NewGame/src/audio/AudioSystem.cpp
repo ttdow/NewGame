@@ -96,8 +96,8 @@ bool AudioSystem::Load(std::string fileName)
 	}
 
 	// Print the WAV header data for debugging.
-	std::cout << "Filename: " << fileName << std::endl;
-	header.summary();
+	//std::cout << "Filename: " << fileName << std::endl;
+	//header.summary();
 
 	// Copy relevant header data to AudioClip.
 	uint32_t frequency = header.frequency;

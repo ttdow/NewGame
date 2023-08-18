@@ -22,14 +22,9 @@ void PhysicsSystem::SetEnvironmentMesh(Model* environmentModel)
 	float maxY = std::numeric_limits<float>::min();;
 	float maxZ = std::numeric_limits<float>::min();;
 
-	//glm::mat3 scaler = glm::mat3(glm::scale(glm::mat4(1.0f), glm::vec3(100.0f, 100.0f, 100.0f)));
-
-	std::cout << "Model size: " << this->environmentModel->meshes.size() << std::endl;
-
 	for (unsigned int j = 0; j < this->environmentModel->meshes.size(); j++)
 	{
 		Mesh& mesh = this->environmentModel->meshes[j];
-		std::cout << "Mesh " << j << " size: " << mesh.indices.size() << std::endl;
 
 		for (unsigned int i = 0; i < mesh.indices.size(); i += 3)
 		{
@@ -77,26 +72,18 @@ void PhysicsSystem::SetEnvironmentMesh(Model* environmentModel)
 		}
 	}
 
-	std::cout << "Triangles: " << this->triangles.size() << std::endl;
-
 	// Save bounding box volume to root node of Octree.
 	glm::vec3 min = glm::vec3(minX, minY, minZ);
 	glm::vec3 max = glm::vec3(maxX, maxY, maxZ);
 	this->octree.root.min = min;
 	this->octree.root.max = max;
 
-	std::cout << "Min point: (" << min.x << ", " << min.y << ", " << min.z << ")" << std::endl;
-	std::cout << "Max point: (" << max.x << ", " << max.y << ", " << max.z << ")" << std::endl;
-	
 	this->octree.Setup();
 }
 
 void PhysicsSystem::Update()
 {
 	CalculatePlayerGravity();
-
-	glm::vec3 pos = *this->playerTransform->position;
-	//std::cout << "Player position: (" << pos.x << ", " << pos.y << ", " << pos.z << ")" << std::endl;
 }
 
 void PhysicsSystem::CalculatePlayerGravity()

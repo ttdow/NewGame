@@ -50,6 +50,8 @@ private:
 	Shader* uiShader;
 	Shader* textShader;
 	Shader* pbrShader;
+	Shader* simpleDepthShader;
+	Shader* debugDepthShader;
 
 	UIElement* uiElement;
 
@@ -61,6 +63,7 @@ private:
 	Model* gobbo;
 	Model* spider;
 	Model* torch;
+	Model* tree;
 
 	AnimationController* goblinAnimController;
 	Animation* gobboWalk;
@@ -80,14 +83,23 @@ private:
 	unsigned int sphereVAO, sphereVBO, sphereEBO;
 	unsigned int indexCount;
 
+	unsigned int depthMapFBO;
+	unsigned int depthMap;
+	unsigned int planeVAO, planeVBO;
+	unsigned int shadowMapFBO;
+	unsigned int shadowMap;
+
 	int windowWidth;
 	int windowHeight;
 
 	std::vector<glm::vec3> vegetation;
+	std::vector<glm::mat4> treeModelMatrices;
 
 	PerlinNoise* noiseMaker;
 
 	void RenderSphere();
+	void ConfigureShaderAndMatrices();
+	void CreateShadowMap();
 
 public:
 	

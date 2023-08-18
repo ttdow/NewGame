@@ -649,6 +649,10 @@
     <None Include="res\shaders\pbr.fs" />
     <None Include="res\shaders\pbr.vs" />
     <None Include="OpenAL32.dll" />
+    <None Include="res\shaders\simpleDepthShader.vs" />
+    <None Include="res\shaders\simpleDepthShader.fs" />
+    <None Include="res\shaders\debug_depth.vs" />
+    <None Include="res\shaders\debug_depth.fs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\glad\glad.h">

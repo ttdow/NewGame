@@ -387,6 +387,8 @@
     <None Include="res\shaders\collider.vs" />
     <None Include="res\shaders\colors.fs" />
     <None Include="res\shaders\colors.vs" />
+    <None Include="res\shaders\debug_depth.fs" />
+    <None Include="res\shaders\debug_depth.vs" />
     <None Include="res\shaders\fragment.shader" />
     <None Include="res\shaders\grass.fs" />
     <None Include="res\shaders\grass.vs" />
@@ -406,6 +408,8 @@
     <None Include="res\shaders\particle.vs" />
     <None Include="res\shaders\pbr.fs" />
     <None Include="res\shaders\pbr.vs" />
+    <None Include="res\shaders\simpleDepthShader.fs" />
+    <None Include="res\shaders\simpleDepthShader.vs" />
     <None Include="res\shaders\skybox.fs" />
     <None Include="res\shaders\skybox.vs" />
     <None Include="res\shaders\standard.fs" />

@@ -23,7 +23,7 @@ void MeshRenderer::AnimUpdate(glm::mat4 projection, glm::mat4 view, glm::vec3 ca
 							  glm::vec3 lightDir, glm::vec3 lightAmbient, glm::vec3 lightDiffuse, 
 							  glm::vec3 lightSpecular, AnimationController* controller,
 							  glm::vec3 pointLightPos, glm::vec3 pointLightAmbient, glm::vec3 pointLightDiffuse,
-							  glm::vec3 pointLightSpecular, float pointLightIntensity)
+							  glm::vec3 pointLightSpecular, float pointLightIntensity, glm::mat4 lightSpaceMatrix)
 {
 	this->shader->Use();
 	this->shader->SetMat4("model", this->entity->GetTransform()->modelMatrix);
@@ -37,6 +37,7 @@ void MeshRenderer::AnimUpdate(glm::mat4 projection, glm::mat4 view, glm::vec3 ca
 	this->shader->SetVec3("directionalLight.ambient", lightAmbient);
 	this->shader->SetVec3("directionalLight.diffuse", lightDiffuse);
 	this->shader->SetVec3("directionalLight.specular", lightSpecular);
+	this->shader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
 	this->shader->SetVec3("pointLight.position", pointLightPos + glm::vec3(0.0f, 5.0f, 0.0f));
 	this->shader->SetVec3("pointLight.ambient", pointLightAmbient);
 	this->shader->SetVec3("pointLight.diffuse", pointLightDiffuse);

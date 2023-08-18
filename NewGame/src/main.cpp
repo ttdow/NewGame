@@ -173,7 +173,7 @@ int main()
 	//stateManager.Initialize(testState);
 
 	AudioSystem audioSystem;
-	audioSystem.Load("test.wav");
+	audioSystem.Load("shamanistic.wav");
 
 	// ------------------------------ GAME LOOP -------------------------------
 	while (!myWindow->ShouldClose())

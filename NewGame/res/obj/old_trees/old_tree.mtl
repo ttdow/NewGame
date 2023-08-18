@@ -1,0 +1,24 @@
+# Blender 3.5.1 MTL File: 'trees.blend'
+# www.blender.org
+
+newmtl branches1
+Ns 319.999939
+Ka 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd -o 0 -1 0 textures/branchcolor.png
+map_Ks -o 0 -1 0 textures/branchSmoothness.png
+map_Bump -o 0 -1 0 -bm 1.000000 textures/branchNormal.png
+
+newmtl tree1
+Ns 105.560646
+Ka 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd -o 0 -1 0 textures/tree1Color.png
+map_Ks -o 0 -1 0 textures/tree1Smoothness.png
+map_Bump -o 0 -1 0 -bm 1.000000 textures/tree1Normal.png

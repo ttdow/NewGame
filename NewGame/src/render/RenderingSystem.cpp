@@ -23,6 +23,8 @@ RenderingSystem::RenderingSystem(Window *window)
 	this->uiShader = new Shader("res/shaders/ui.vs", "res/shaders/ui.fs");
 	this->textShader = new Shader("res/shaders/text.vs", "res/shaders/text.fs");
 	this->pbrShader = new Shader("res/shaders/pbr.vs", "res/shaders/pbr.fs");
+	this->simpleDepthShader = new Shader("res/shaders/simpleDepthShader.vs", "res/shaders/simpleDepthShader.fs");
+	this->debugDepthShader = new Shader("res/shaders/debug_depth.vs", "res/shaders/debug_depth.fs");
 
 	// UI Elements.
 	this->uiElement = new UIElement();
@@ -34,6 +36,7 @@ RenderingSystem::RenderingSystem(Window *window)
 	this->treeLevel = new Model("res/obj/tree/tree_level.obj");
 	this->torch = new Model("res/obj/torch/torch.obj");
 	this->spider = new Model("res/obj/spider.fbx");
+	this->tree = new Model("res/obj/old_trees/old_tree.obj");
 
 	stbi_set_flip_vertically_on_load(true);
 	this->gobbo = new Model("res/obj/gobbo.fbx");
@@ -143,6 +146,27 @@ RenderingSystem::RenderingSystem(Window *window)
 	// Skybox.
 	this->skybox = new Skybox();
 
+	// Trees.
+	std::vector<glm::vec3> treePoses;
+	treePoses.emplace_back(10.0f, 0.0f, 150.0f);
+	treePoses.emplace_back(-20.0f, 1.0f, 134.0f);
+	treePoses.emplace_back(55.0f, 1.0f, 176.0f);
+	treePoses.emplace_back(200.0f, 1.0f, 50.0f);
+	treePoses.emplace_back(43.0f, 1.0f, -150.0f);
+
+	for (unsigned int i = 0; i < treePoses.size(); i++)
+	{
+		float s = (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) + 1.0f);
+		float r = (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) + 3.14159f * 2.0f);
+
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, treePoses[i]);
+		model = glm::rotate(model, r, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(s, s, s));
+
+		this->treeModelMatrices.push_back(model);
+	}
+
 	// Grass.
 	for (unsigned int i = 0; i < 50000; i++)
 	{
@@ -225,6 +249,55 @@ RenderingSystem::RenderingSystem(Window *window)
 
 	// Spheres.
 	this->indexCount = 0;
+
+	// Shadow map.
+	float planeVertices[] =
+	{
+		// Position				// Texture UVs
+		-1.0f,  1.0f,  0.0f,	1.0f,  1.0f,
+		-1.0f, -1.0f,  0.0f,	1.0f,  0.0f,
+		 1.0f, -1.0f,  0.0f,	0.0f,  0.0f,
+
+		-1.0f,  1.0f,  0.0f,	1.0f,  1.0f,
+		 1.0f, -1.0f,  0.0f,	0.0f,  0.0f,
+		 1.0f,  1.0f,  0.0f,	0.0f,  1.0f
+	};
+
+	glGenVertexArrays(1, &this->planeVAO);
+	glGenBuffers(1, &this->planeVBO);
+	glBindVertexArray(this->planeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, this->planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
+	glGenFramebuffers(1, &this->depthMapFBO);
+	glGenTextures(1, &this->depthMap);
+	glBindTexture(GL_TEXTURE_2D, this->depthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, this->depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->depthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "ERROR::FRAMEBUFFER: Framebuffer is not complete!" << std::endl;
+	}
+
+	this->debugDepthShader->Use();
+	this->debugDepthShader->SetInt("depthMap", 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 RenderingSystem::~RenderingSystem()
@@ -241,6 +314,8 @@ RenderingSystem::~RenderingSystem()
 	delete(this->uiShader);
 	delete(this->textShader);
 	delete(this->pbrShader);
+	delete(this->simpleDepthShader);
+	delete(this->debugDepthShader);
 
 	// Clean up models.
 	delete(this->treeLevel);
@@ -381,11 +456,94 @@ void RenderingSystem::RenderSphere()
 	glDrawElements(GL_TRIANGLE_STRIP, this->indexCount, GL_UNSIGNED_INT, 0);
 }
 
+void RenderingSystem::CreateShadowMap()
+{
+	// Configure shadow map FBO.
+	glGenFramebuffers(1, &this->shadowMapFBO);
+	
+	// Create shadow map texture.
+	glGenTextures(1, &this->shadowMap);
+	glBindTexture(GL_TEXTURE_2D, this->shadowMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, this->windowWidth, this->windowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Attach shadow map texture as FBO's depth buffer.
+	glBindFramebuffer(GL_FRAMEBUFFER, this->shadowMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this->shadowMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "ERROR::FRAMEBUFFER: Framebuffer is not complete!" << std::endl;
+	}
+
+	// Re-bind default framebuffer and texture.
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+glm::mat4 GetLightSpaceMatrix()
+{
+	glm::mat4 lightProjection, lightView, lightSpaceMatrix;
+
+	float nearPlane = 0.1f;
+	float farPlane = 500.0f;
+
+	glm::vec3 lightPos = glm::vec3(0.0f, 150.0f, 150.0f);
+
+	lightProjection = glm::ortho(-150.0f, 150.0f, -150.0f, 150.0f, nearPlane, farPlane);
+	lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	lightSpaceMatrix = lightProjection * lightView;
+
+	return lightSpaceMatrix;
+}
+
+void RenderingSystem::ConfigureShaderAndMatrices()
+{
+	this->simpleDepthShader->Use();
+	this->simpleDepthShader->SetMat4("lightSpaceMatrix", GetLightSpaceMatrix());
+
+	glViewport(0, 0, 2048, 2048);
+	glBindFramebuffer(GL_FRAMEBUFFER, this->depthMapFBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	glm::mat4 model = glm::mat4(1.0f);
+	this->simpleDepthShader->SetMat4("model", model);
+	this->treeLevel->Draw(*this->simpleDepthShader);
+
+	// Draw small trees.
+	for (unsigned int i = 0; i < this->treeModelMatrices.size(); i++)
+	{
+		this->simpleDepthShader->SetMat4("model", this->treeModelMatrices[i]);
+		this->tree->Draw(*this->simpleDepthShader);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void RenderingSystem::Update()
 {
-	// Clear previous frame.
+	// 1. Render to depth map.
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	ConfigureShaderAndMatrices();
+
+	// 2. Render the scene as normal with shadow mapping.
+	glViewport(0, 0, this->windowWidth, this->windowHeight);
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Draw shadow map to debug quad.
+	/*
+	this->debugDepthShader->Use();
+	glBindTexture(GL_TEXTURE_2D, this->depthMap);
+	glBindVertexArray(this->planeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+	*/
 
 	// Update camera.
 	this->camera->Update();
@@ -397,7 +555,8 @@ void RenderingSystem::Update()
 
 	// Lighting data.
 	glm::vec3 lightDir = glm::normalize(glm::vec3(0.0f, -1.0f, 1.0f));
-	glm::vec3 lightPos = glm::vec3(0.0f, 10.0f, 5.0f);
+	glm::vec3 lightPos = glm::vec3(0.0f, 150.0f, 150.0f);
+	glm::mat4 lightSpaceMatrix = GetLightSpaceMatrix();
 	glm::vec3 lightAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
 	glm::vec3 lightDiffuse = glm::vec3(0.4f, 0.4f, 0.4f);
 	glm::vec3 lightSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -408,8 +567,24 @@ void RenderingSystem::Update()
 	glm::vec3 pointLightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
 	float pointLightIntensity = this->noiseMaker->Noise(glfwGetTime());
 
-	glm::vec3 goblinPos = *this->goblinTransform->position;
-	std::cout << "(" << goblinPos.x << ", " << goblinPos.y << ", " << goblinPos.z << ")" << std::endl;
+	// Shadow map data.
+	this->standardShader->Use();
+	glActiveTexture(GL_TEXTURE17);
+	glBindTexture(GL_TEXTURE_2D, this->depthMap);
+	this->standardShader->SetInt("shadowMap", 17);
+	glActiveTexture(GL_TEXTURE0);
+
+	this->animShader->Use();
+	glActiveTexture(GL_TEXTURE18);
+	glBindTexture(GL_TEXTURE_2D, this->depthMap);
+	this->animShader->SetInt("shadowMap", 18);
+	glActiveTexture(GL_TEXTURE0);
+
+	this->grassShader->Use();
+	glActiveTexture(GL_TEXTURE19);
+	glBindTexture(GL_TEXTURE_2D, this->depthMap);
+	this->grassShader->SetInt("shadowMap", 19);
+	glActiveTexture(GL_TEXTURE0);
 
 	// Draw goblin.
 	this->goblin->GetRenderer()->AnimUpdate(projection,
@@ -424,11 +599,12 @@ void RenderingSystem::Update()
 											pointLightAmbient,
 											pointLightDiffuse,
 											pointLightSpecular,
-											pointLightIntensity);
+											pointLightIntensity,
+											lightSpaceMatrix);
 
 	// Draw spider.
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(10.0f, 0.0f, 150.0f));
+	model = glm::translate(model, glm::vec3(0.0f, 18.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(0.25f, 0.25f, 0.25f));
 	this->animShader->Use();
 	this->animShader->SetMat4("model", model);
@@ -442,6 +618,7 @@ void RenderingSystem::Update()
 	this->animShader->SetVec3("directionalLight.ambient", lightAmbient);
 	this->animShader->SetVec3("directionalLight.diffuse", lightDiffuse);
 	this->animShader->SetVec3("directionalLight.specular", lightSpecular);
+	this->animShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
 	this->animShader->SetVec3("pointLight.position", pointLightPos + glm::vec3(0.0f, 5.0f, 0.0f));
 	this->animShader->SetVec3("pointLight.ambient", pointLightAmbient);
 	this->animShader->SetVec3("pointLight.diffuse", pointLightDiffuse);
@@ -469,6 +646,7 @@ void RenderingSystem::Update()
 	this->standardShader->SetVec3("directionalLight.ambient", lightAmbient);
 	this->standardShader->SetVec3("directionalLight.diffuse", lightDiffuse);
 	this->standardShader->SetVec3("directionalLight.specular", lightSpecular);
+	this->standardShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
 	this->standardShader->SetVec3("pointLight.position", pointLightPos + glm::vec3(0.0f, 5.0f, 0.0f));
 	this->standardShader->SetVec3("pointLight.ambient", pointLightAmbient);
 	this->standardShader->SetVec3("pointLight.diffuse", pointLightDiffuse);
@@ -479,6 +657,13 @@ void RenderingSystem::Update()
 	this->standardShader->SetFloat("pointLight.intensity", pointLightIntensity);
 
 	this->treeLevel->Draw(*this->standardShader);
+
+	// Draw small trees.
+	for (unsigned int i = 0; i < this->treeModelMatrices.size(); i++)
+	{
+		this->standardShader->SetMat4("model", this->treeModelMatrices[i]);
+		this->tree->Draw(*this->standardShader);
+	}
 
 	// TODO Volumetric lighting test.
 	/*
@@ -503,6 +688,8 @@ void RenderingSystem::Update()
 	this->grassShader->Use();
 	this->grassShader->SetMat4("projection", projection);
 	this->grassShader->SetMat4("view", view);
+	this->grassShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
+	this->standardShader->SetVec3("lightDir", lightDir);
 	glBindVertexArray(this->blendVAO);
 	glBindTexture(GL_TEXTURE_2D, this->grassTex->GetID());
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, this->vegetation.size());
@@ -575,6 +762,7 @@ void RenderingSystem::Update()
 	this->standardShader->SetVec3("directionalLight.ambient", lightAmbient);
 	this->standardShader->SetVec3("directionalLight.diffuse", lightDiffuse);
 	this->standardShader->SetVec3("directionalLight.specular", lightSpecular);
+	this->standardShader->SetMat4("lightSpaceMatrix", lightSpaceMatrix);
 	this->standardShader->SetVec3("pointLight.position", pointLightPos);
 	this->standardShader->SetVec3("pointLight.ambient", pointLightAmbient);
 	this->standardShader->SetVec3("pointLight.diffuse", pointLightDiffuse);

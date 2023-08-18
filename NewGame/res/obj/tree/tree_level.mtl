@@ -21,6 +21,39 @@ d 1.000000
 illum 2
 map_Kd grass2.jpg
 
+newmtl PBR_Bark
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd bark/bark1-albedo.png
+map_Ns bark/bark1-rough.png
+map_refl bark/bark1-metalness.png
+
+newmtl PBR_Light_Bark
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd light_bark/light-tree-bark_albedo.png
+map_Ns bark/bark1-rough.png
+map_refl light_bark/light-tree-bark_metallic.psd
+
+newmtl PBR_Wood
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd plywood/streaky-plywood_albedo.png
+map_Ns bark/bark1-rough.png
+map_refl plywood/streaky-plywood_metallic.psd
+
 newmtl Tree
 Ns 250.000000
 Ka 1.000000 1.000000 1.000000

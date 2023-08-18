@@ -36,10 +36,14 @@ struct PointLight
 in vec3 fragPos;
 in vec3 normal;
 in vec2 texCoords;
+in vec4 fragPosLightSpace;
 
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_normal1;
+uniform sampler2D shadowMap;
+
 uniform vec3 viewPos;
+
 uniform Material material;
 uniform DirectionalLight directionalLight;
 uniform PointLight pointLight;
@@ -94,15 +98,23 @@ void main()
     vec3 color = texture(texture_diffuse1, texCoords).rgb;
     vec3 norm = normalize(normal);
     vec3 viewDir = normalize(viewPos - fragPos);
+    vec3 lightDir = normalize(-directionalLight.direction);
 
     // Directional lighting.
-    vec3 result = CalcDirectionalLighting(directionalLight, color, norm, viewDir);
-    result += CalcPointLighting(pointLight, fragPos, vec3(1.0, 0.0, 0.0), norm, viewDir);
+    vec3 directional = CalcDirectionalLighting(directionalLight, color, norm, viewDir);
+    vec3 point = CalcPointLighting(pointLight, fragPos, vec3(1.0, 0.0, 0.0), norm, viewDir);
 
     // Ambient lighting.
     vec3 ambient = directionalLight.ambient * color;
 
+    // Shadows
+    vec3 projCoords = (fragPosLightSpace.xyz / fragPosLightSpace.w * 0.5) + 0.5;
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+    float bias = max(0.05 * (1.0 - dot(norm, lightDir)), 0.005);
+    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
     // Blinn-Phong lighting.
-    result += ambient;
+    vec3 result = (ambient + point + ((1.0 - shadow) * directional)) * color;
     fragColor = vec4(result, 1.0);
 }
