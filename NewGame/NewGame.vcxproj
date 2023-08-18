@@ -167,11 +167,9 @@
     <ClCompile Include="src\game\GameManager.cpp" />
     <ClCompile Include="src\game\Player.cpp" />
     <ClCompile Include="src\game\states\GameState.cpp" />
-    <ClCompile Include="src\game\RaceManager.cpp" />
     <ClCompile Include="src\game\StateManager.cpp" />
     <ClCompile Include="src\game\states\RaceStartState.cpp" />
     <ClCompile Include="src\game\states\RaceTurnState.cpp" />
-    <ClCompile Include="src\game\TurnManager.cpp" />
     <ClCompile Include="src\input\InputSystem.cpp" />
     <ClCompile Include="src\input\PlayerController.cpp" />
     <ClCompile Include="src\particle\Particle.cpp" />
@@ -893,11 +891,9 @@
     <ClInclude Include="src\game\GameManager.h" />
     <ClInclude Include="src\game\Player.h" />
     <ClInclude Include="src\game\states\GameState.h" />
-    <ClInclude Include="src\game\RaceManager.h" />
     <ClInclude Include="src\game\StateManager.h" />
     <ClInclude Include="src\game\states\RaceStartState.h" />
     <ClInclude Include="src\game\states\RaceTurnState.h" />
-    <ClInclude Include="src\game\TurnManager.h" />
     <ClInclude Include="src\input\InputSystem.h" />
     <ClInclude Include="src\input\PlayerController.h" />
     <ClInclude Include="src\particle\Particle.h" />

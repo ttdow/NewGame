@@ -84,12 +84,6 @@
     <ClCompile Include="src\game\GameManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\game\TurnManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\game\RaceManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\game\StateManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1835,12 +1829,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\game\GameManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\game\TurnManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\game\RaceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\game\StateManager.h">
