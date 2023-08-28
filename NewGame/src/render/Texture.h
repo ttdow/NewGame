@@ -7,6 +7,21 @@
 #include <string>
 #include <iostream>
 
+class Texture
+{
+public:
+
+	unsigned int id;
+	std::string filePath;
+
+	void Load(std::string filePath);
+
+private:
+
+	std::string type;
+
+};
+
 class TextureClass
 {
 public:

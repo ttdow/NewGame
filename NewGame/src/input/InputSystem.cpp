@@ -99,12 +99,12 @@ void InputSystem::HandleKeyInput(int key, int scancode, int action, int mods)
 	{
 		if (action == GLFW_PRESS || action == GLFW_REPEAT)
 		{
-			this->renderingSystem->ChangeAnimation("walk");
+			//this->renderingSystem->ChangeAnimation("walk");
 			this->playerController->HandleInput(PlayerMovement::FORWARD);
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			this->renderingSystem->ChangeAnimation("idle");
+			//this->renderingSystem->ChangeAnimation("idle");
 		}
 	}
 
@@ -112,12 +112,12 @@ void InputSystem::HandleKeyInput(int key, int scancode, int action, int mods)
 	{
 		if (action == GLFW_PRESS || action == GLFW_REPEAT)
 		{
-			this->renderingSystem->ChangeAnimation("walk");
+			//this->renderingSystem->ChangeAnimation("walk");
 			this->playerController->HandleInput(PlayerMovement::BACKWARD);
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			this->renderingSystem->ChangeAnimation("idle");
+			//this->renderingSystem->ChangeAnimation("idle");
 		}
 	}
 
@@ -131,21 +131,31 @@ void InputSystem::HandleKeyInput(int key, int scancode, int action, int mods)
 		this->playerController->HandleInput(PlayerMovement::LEFT);
 	}
 
+	if (key == GLFW_KEY_E)
+	{
+		this->playerController->HandleInput(PlayerMovement::UP);
+	}
+
+	if (key == GLFW_KEY_Q)
+	{
+		this->playerController->HandleInput(PlayerMovement::DOWN);
+	}
+
 	if (key == GLFW_KEY_SPACE)
 	{
-		this->renderingSystem->ChangeAnimation("jump");
+		//this->renderingSystem->ChangeAnimation("jump");
 		this->playerController->HandleInput(PlayerMovement::JUMP);
 	}
 
 	if (key == GLFW_KEY_R)
 	{
-		this->renderingSystem->ChangeAnimation("attack");
+		//this->renderingSystem->ChangeAnimation("attack");
 	}
 
-	if (key == GLFW_KEY_0)
-		this->renderingSystem->ChangeAnimation("idle");
-	if (key == GLFW_KEY_1)
-		this->renderingSystem->ChangeAnimation("walk");
+	//if (key == GLFW_KEY_0)
+		//this->renderingSystem->ChangeAnimation("idle");
+	//if (key == GLFW_KEY_1)
+		//this->renderingSystem->ChangeAnimation("walk");
 }
 
 void InputSystem::HandleMouseButtonInput(int button, int action, int mods)

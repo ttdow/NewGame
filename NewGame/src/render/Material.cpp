@@ -1,16 +1,13 @@
 #include "Material.h"
 
-Material::Material(std::string dir)
+Material::Material(std::string name)
 {
-	this->albedo = new TextureClass(dir + "albedo.png", false);
-	this->normal = new TextureClass(dir + "normal.png", false);
-	this->metallic = new TextureClass(dir + "metallic.png", false);
-	this->roughness = new TextureClass(dir + "roughness.png", false);
-	this->ao = new TextureClass(dir + "ao.png", false);
+	this->name = name;
 }
 
 void Material::BindMaterial()
 {
+	/*
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, this->albedo->GetID());
 	glActiveTexture(GL_TEXTURE1);
@@ -21,4 +18,5 @@ void Material::BindMaterial()
 	glBindTexture(GL_TEXTURE_2D, this->roughness->GetID());
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, this->ao->GetID());
+	*/
 }

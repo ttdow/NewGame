@@ -10,7 +10,9 @@ enum PlayerMovement
 	LEFT,
 	RIGHT,
 	JUMP,
-	ATTACK
+	ATTACK,
+	UP,
+	DOWN
 };
 
 class PlayerController
@@ -19,6 +21,7 @@ public:
 
 	float currentSpeed;
 	float currentTurnSpeed;
+	float currentFlySpeed;
 	bool freeCamera;
 
 	PlayerController();
@@ -32,5 +35,6 @@ private:
 	Time* time;
 
 	const float RUN_SPEED = 200;
-	const float TURN_SPEED = 40;
+	const float TURN_SPEED = 200;
+	const float FLY_SPEED = 200;
 };

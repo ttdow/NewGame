@@ -20,5 +20,6 @@ public:
 
 	VAO();
 	void Bind();
+	void Unbind();
 	void Setup();
 };

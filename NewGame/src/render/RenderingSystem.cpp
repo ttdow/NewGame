@@ -2,42 +2,109 @@
 
 RenderingSystem::RenderingSystem(Window *window)
 {
+	// Set OpenGL flags.
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 
-	this->noiseMaker = PerlinNoise::GetInstance();
-	this->noiseMaker->SetRandomSeed(999);
-
+	// Get window data.
 	this->window = window;
 	this->windowWidth = window->GetWidth();
 	this->windowHeight = window->GetHeight();
 
+	// ------------------------ Setup goblin character ---------------------------
+	// TODO much of this should be moved to entity/component creation.
+	this->goblin = new Entity("goblin");
+	glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 rot = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 sca = glm::vec3(0.1f, 0.1f, 0.1f);
+	this->goblinTransform = new Transform(this->goblin, pos, rot, sca);
+	this->goblinTransform->entity = this->goblin;
+	this->goblin->components.push_back(this->goblinTransform);
+
+	// Goblin mesh renderer.
+	/*
+	this->goblinRenderer = new MeshRenderer(this->animShader, this->gobbo);
+	this->goblinRenderer->entity = this->goblin;
+	this->goblin->components.push_back(this->goblinRenderer);
+	*/
+
+	// Perlin Noise Generator.
+	/*
+	this->noiseMaker = PerlinNoise::GetInstance();
+	this->noiseMaker->SetRandomSeed(999);
+	*/
+
+	this->dirLight = new DirectionalLight();
+	this->lightPos = glm::vec3(0.0f, 20.0f, 10.0f);
+	this->dirLight->direction = glm::normalize(glm::vec3(0.0f) - this->lightPos);
+	this->dirLight->ambientIntensity = glm::vec3(0.05f, 0.05f, 0.05f);
+	this->dirLight->diffuseIntensity = glm::vec3(0.6f, 0.6f, 0.6f);
+	this->dirLight->specularIntensity = glm::vec3(0.6f, 0.6f, 0.6f);
+
+	this->pointLight = new PointLight(*this->goblinTransform->position);
+	this->pointLight->ambientIntensity = glm::vec3(0.05f, 0.05f, 0.05f);
+	this->pointLight->diffuseIntensity = glm::vec3(0.6f, 0.6f, 0.6f);
+	this->pointLight->specularIntensity = glm::vec3(0.6f, 0.6f, 0.6f);
+	this->pointLight->constant = 0.0f;
+	this->pointLight->linear = 0.0f;
+	this->pointLight->quadratic = 1.0f;
+
 	// Shaders.
+	this->lightShader = new Shader("res/shaders/light.vs", "res/shaders/light.fs");
+	this->blinnPhong = new Shader("res/shaders/blinnPhong.vs", "res/shaders/blinnPhong.fs");
+	this->simpleDepthShader = new Shader("res/shaders/simpleDepthShader.vs", "res/shaders/simpleDepthShader.fs");
+	this->debugDepthShader = new Shader("res/shaders/debug_depth.vs", "res/shaders/debug_depth.fs");
+	this->hdrShader = new Shader("res/shaders/hdr.vs", "res/shaders/hdr.fs");
+	this->blurShader = new Shader("res/shaders/blur.vs", "res/shaders/blur.fs");
+	this->blinnPhong2 = new Shader("res/shaders/blinnPhong.vs", "res/shaders/blinnPhong2.fs");
+	this->texturedQuadShader = new Shader("res/shaders/quadTexture.vs", "res/shaders/quadTexture.fs");
+
+	/*
 	this->ourShader = new Shader("res/shaders/model_loading.vs", "res/shaders/model_loading.fs");
 	this->standardShader = new Shader("res/shaders/standard.vs", "res/shaders/standard.fs");
 	this->animShader = new Shader("res/shaders/anim.vs", "res/shaders/anim.fs");
 	this->blendShader = new Shader("res/shaders/blending.vs", "res/shaders/blending.fs");
 	this->volumeLightShader = new Shader("res/shaders/volume_light.vs", "res/shaders/volume_light.fs");
 	this->particleShader = new Shader("res/shaders/particle.vs", "res/shaders/particle.fs");
-	this->colliderShader = new Shader("res/shaders/collider.vs", "res/shaders/collider.fs");
 	this->grassShader = new Shader("res/shaders/grass.vs", "res/shaders/grass.fs");
 	this->uiShader = new Shader("res/shaders/ui.vs", "res/shaders/ui.fs");
 	this->textShader = new Shader("res/shaders/text.vs", "res/shaders/text.fs");
 	this->pbrShader = new Shader("res/shaders/pbr.vs", "res/shaders/pbr.fs");
-	this->simpleDepthShader = new Shader("res/shaders/simpleDepthShader.vs", "res/shaders/simpleDepthShader.fs");
-	this->debugDepthShader = new Shader("res/shaders/debug_depth.vs", "res/shaders/debug_depth.fs");
+	*/
 
-	// UI Elements.
-	this->uiElement = new UIElement();
+	// Initialize camera.
+	this->camera = new Camera(this->goblinTransform);
+	
+	// Tracked uniforms.
+	this->showDebugShadowMap = false;
+	this->orthoValues = glm::vec4(-22.5f, 22.5f, -22.5f, 22.5f);
+	this->nearPlane = 0.1f;
+	this->farPlane = 35.0f;
+	this->lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	this->minBias = 0.005f;
+	this->shininess = 32.0f;
+	this->exposure = 1.0f;
+	this->firstGamma = true;
+	this->secondGamma = true;
+	this->hdr = false;
+	this->bloom = false;
+	this->bloomBrightness = 1.0f;
+	this->debugNormalMap = false;
+	this->debugVertexNormals = false;
+	this->horizontal = true;
 
-	// Particles.
-	this->particleGenerator = new ParticleGenerator(glm::vec3(-39.7893f, 22.0f, 25.2649f), 50, 2.0f);
+	this->quadVAO = 0;
+	this->sphereVAO = 0;
 	
 	// Models.
+	this->sponza = new ModelClass("res/obj/sponza/sponza.obj");
+
+	/*
 	this->treeLevel = new Model("res/obj/tree/tree_level.obj");
 	this->torch = new Model("res/obj/torch/torch.obj");
 	this->spider = new Model("res/obj/spider.fbx");
 	this->tree = new Model("res/obj/old_trees/old_tree.obj");
-
+	
 	stbi_set_flip_vertically_on_load(true);
 	this->gobbo = new Model("res/obj/gobbo.fbx");
 	this->goblinAnimController = new AnimationController();
@@ -121,28 +188,78 @@ RenderingSystem::RenderingSystem(Window *window)
 	this->spiderAnimController->animators.insert(spiderAnimator);
 	this->spiderAnimController->Play("move");
 
-	// Setup goblin character.
-	// TODO much of this should be moved to entity/component creation.
-	this->goblin = new Entity("goblin");
-	this->goblin->components.reserve(2);
+	// Particles.
+	//this->particleGenerator = new ParticleGenerator(glm::vec3(-39.7893f, 22.0f, 25.2649f), 50, 2.0f);
+	*/
+	// Floating point framebuffer.
+	glGenFramebuffers(1, &this->hdrFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, this->hdrFBO);
 
-	glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 rot = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 sca = glm::vec3(0.1f, 0.1f, 0.1f);
-	this->goblinTransform = new Transform(this->goblin, pos, rot, sca);
-	this->goblinTransform->entity = this->goblin;
-	this->goblin->components.push_back(this->goblinTransform);
+	// Create two output textures.
+	glGenTextures(2, this->colorBuffer);
+	for (unsigned int i = 0; i < 2; i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, this->colorBuffer[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, this->windowWidth, this->windowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		
+		// Attach texture to framebuffer.
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, this->colorBuffer[i], 0);
+	}
+	
+	// Create and attach depth buffer.
+	glGenRenderbuffers(1, &this->rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, this->rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, this->windowWidth, this->windowHeight);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->rboDepth);
 
-	this->goblinRenderer = new MeshRenderer(this->animShader, this->gobbo);
-	this->goblinRenderer->entity = this->goblin;
-	this->goblin->components.push_back(this->goblinRenderer);
+	// Tell OpenGL which color attachments we'll use for rendering.
+	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, attachments);
 
-	// Initialize camera.
-	this->camera = new Camera(this->goblinTransform);
+	// Finally, check if framebuffer is complete.
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "Framebuffer not complete!" << std::endl;
+	}
 
-	// Move gobline entity to initial position.
+	// Ping-pong framebuffers for Gaussian blur.
+	glGenFramebuffers(2, this->pingPongFBO);
+	glGenTextures(2, this->pingPongColorBuffers);
+
+	for (unsigned int i = 0; i < 2; i++)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, this->pingPongFBO[i]);
+		glBindTexture(GL_TEXTURE_2D, this->pingPongColorBuffers[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, this->windowWidth, this->windowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->pingPongColorBuffers[i], 0);
+
+		// Check if framebuffers are complete.
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			std::cout << "Framebuffer not complete!" << std::endl;
+		}
+	}
+
+	// Reset to default framebuffer.
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
+	// This isn't called in example.
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	// Other old stuff.
+	/*
+	// Move goblin entity to initial position.
 	this->goblin->GetTransform()->position->z = 150.0f;
-
+	
 	// Skybox.
 	this->skybox = new Skybox();
 
@@ -249,6 +366,7 @@ RenderingSystem::RenderingSystem(Window *window)
 
 	// Spheres.
 	this->indexCount = 0;
+	*/
 
 	// Shadow map.
 	float planeVertices[] =
@@ -274,13 +392,15 @@ RenderingSystem::RenderingSystem(Window *window)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
+	const unsigned int SHADOW_WIDTH = this->windowWidth, SHADOW_HEIGHT = this->windowHeight;
 	glGenFramebuffers(1, &this->depthMapFBO);
 	glGenTextures(1, &this->depthMap);
 	glBindTexture(GL_TEXTURE_2D, this->depthMap);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -298,10 +418,15 @@ RenderingSystem::RenderingSystem(Window *window)
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	CreateGBuffer();
 }
 
 RenderingSystem::~RenderingSystem()
 {
+	// Clean up light sources.
+	delete(this->dirLight);
+
 	// Clean up shader programs.
 	delete(this->ourShader);
 	delete(this->standardShader);
@@ -316,12 +441,17 @@ RenderingSystem::~RenderingSystem()
 	delete(this->pbrShader);
 	delete(this->simpleDepthShader);
 	delete(this->debugDepthShader);
+	delete(this->blinnPhong);
+	delete(this->lightShader);
+	delete(this->hdrShader);
+	delete(this->blurShader);
 
 	// Clean up models.
 	delete(this->treeLevel);
 	delete(this->torch);
 	delete(this->gobbo);
 	delete(this->spider);
+	delete(this->sponza);
 
 	// Clean up animations.
 	delete(this->gobboWalk);
@@ -354,6 +484,96 @@ RenderingSystem::~RenderingSystem()
 
 	// Clean up text rendering test.
 	delete(this->uiElement);
+}
+
+void RenderingSystem::CreateGBuffer()
+{
+	// Bind framebuffer.
+	glGenFramebuffers(1, &this->gBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, this->gBuffer);
+
+	// Position.
+	glGenTextures(1, &this->gPosition);
+	glBindTexture(GL_TEXTURE_2D, this->gPosition);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, this->windowWidth, this->windowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->gPosition, 0);
+
+	// Normal.
+	glGenTextures(1, &this->gNormal);
+	glBindTexture(GL_TEXTURE_2D, this->gNormal);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, this->windowWidth, this->windowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, this->gNormal, 0);
+
+	// Albedo.
+	glGenTextures(1, &this->gAlbedo);
+	glBindTexture(GL_TEXTURE_2D, this->gAlbedo);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->windowWidth, this->windowHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, this->gAlbedo, 0);
+
+	// Create and attach depth buffer.
+	glGenRenderbuffers(1, &this->gDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, this->gDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, this->windowWidth, this->windowHeight);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->gDepth);
+
+	// Tell OpenGL about the color attachments.
+	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, attachments);
+
+	// Finally, check if framebuffer is complete.
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "Framebuffer not complete!" << std::endl;
+	}
+
+	// Re-bind default framebuffer and renderbuffer.
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderingSystem::RenderQuad()
+{
+	if (this->quadVAO == 0)
+	{
+		glGenVertexArrays(1, &this->quadVAO);
+
+		glGenBuffers(1, &this->quadVBO);
+
+		float quadVertices[] =
+		{
+			// Position				// Texture UVs
+			-1.0f,  1.0f,  0.0f,	1.0f,  1.0f,
+			-1.0f, -1.0f,  0.0f,	1.0f,  0.0f,
+			 1.0f, -1.0f,  0.0f,	0.0f,  0.0f,
+
+			-1.0f,  1.0f,  0.0f,	1.0f,  1.0f,
+			 1.0f, -1.0f,  0.0f,	0.0f,  0.0f,
+			 1.0f,  1.0f,  0.0f,	0.0f,  1.0f
+		};
+
+		glBindVertexArray(this->quadVAO);
+		
+		glBindBuffer(GL_ARRAY_BUFFER, this->quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		
+		glBindVertexArray(0);
+	}
+
+	glBindVertexArray(this->quadVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
 }
 
 void RenderingSystem::RenderSphere()
@@ -454,6 +674,7 @@ void RenderingSystem::RenderSphere()
 
 	glBindVertexArray(this->sphereVAO);
 	glDrawElements(GL_TRIANGLE_STRIP, this->indexCount, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
 }
 
 void RenderingSystem::CreateShadowMap()
@@ -485,17 +706,18 @@ void RenderingSystem::CreateShadowMap()
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-glm::mat4 GetLightSpaceMatrix()
+glm::mat4 RenderingSystem::GetLightSpaceMatrix()
 {
 	glm::mat4 lightProjection, lightView, lightSpaceMatrix;
 
-	float nearPlane = 0.1f;
-	float farPlane = 500.0f;
+	lightProjection = glm::ortho(this->orthoValues.x, 
+								 this->orthoValues.y, 
+								 this->orthoValues.z, 
+								 this->orthoValues.w, 
+								 this->nearPlane, 
+								 this->farPlane);
 
-	glm::vec3 lightPos = glm::vec3(0.0f, 150.0f, 150.0f);
-
-	lightProjection = glm::ortho(-150.0f, 150.0f, -150.0f, 150.0f, nearPlane, farPlane);
-	lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	lightView = glm::lookAt(this->lightPos, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	lightSpaceMatrix = lightProjection * lightView;
 
 	return lightSpaceMatrix;
@@ -506,86 +728,308 @@ void RenderingSystem::ConfigureShaderAndMatrices()
 	this->simpleDepthShader->Use();
 	this->simpleDepthShader->SetMat4("lightSpaceMatrix", GetLightSpaceMatrix());
 
-	glViewport(0, 0, 2048, 2048);
+	glViewport(0, 0, this->windowWidth, this->windowHeight);
 	glBindFramebuffer(GL_FRAMEBUFFER, this->depthMapFBO);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glm::mat4 model = glm::mat4(1.0f);
 	this->simpleDepthShader->SetMat4("model", model);
-	this->treeLevel->Draw(*this->simpleDepthShader);
 
-	// Draw small trees.
-	for (unsigned int i = 0; i < this->treeModelMatrices.size(); i++)
-	{
-		this->simpleDepthShader->SetMat4("model", this->treeModelMatrices[i]);
-		this->tree->Draw(*this->simpleDepthShader);
-	}
+	this->sponza->Draw(*this->simpleDepthShader);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RenderingSystem::Update()
+void RenderingSystem::ClearCurrentFrame()
 {
-	// 1. Render to depth map.
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	ConfigureShaderAndMatrices();
-
-	// 2. Render the scene as normal with shadow mapping.
 	glViewport(0, 0, this->windowWidth, this->windowHeight);
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
 
-	// Draw shadow map to debug quad.
-	/*
+void RenderingSystem::UpdateShadowMap()
+{
+	ConfigureShaderAndMatrices();
+}
+
+void RenderingSystem::RenderDebugDepthMap()
+{
+	// Select shader.
 	this->debugDepthShader->Use();
+
+	// Bind depth map texture.
+	glActiveTexture(GL_TEXTURE17);
 	glBindTexture(GL_TEXTURE_2D, this->depthMap);
+	this->debugDepthShader->SetInt("depthMap", 17);
+
+	// Draw.
 	glBindVertexArray(this->planeVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
-	*/
+	
+	// Bind default texture.
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void RenderingSystem::RenderToHDRFramebuffer()
+{
+	// Clear frame.
+	glBindFramebuffer(GL_FRAMEBUFFER, this->hdrFBO);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Select shader.
+	this->blinnPhong->Use();
+
+	// Bind shadow map texture and set shadow uniforms.
+	glActiveTexture(GL_TEXTURE17);
+	glBindTexture(GL_TEXTURE_2D, this->depthMap);
+	this->blinnPhong->SetInt("shadowMap", 17);
+	glActiveTexture(GL_TEXTURE0);
+	this->blinnPhong->SetMat4("lightSpaceMatrix", GetLightSpaceMatrix());
+	this->blinnPhong->SetFloat("minBias", this->minBias);
+
+	// Set scene uniforms.
+	this->blinnPhong->SetBool("debugNormalMap", this->debugNormalMap);
+	this->blinnPhong->SetBool("debugVertexNormals", this->debugVertexNormals);
+	this->blinnPhong->SetFloat("bloomBrightness", this->bloomBrightness);
+	this->blinnPhong->SetBool("firstGamma", this->firstGamma);
+	this->blinnPhong->SetCamera(this->camera, this->windowWidth, this->windowHeight);
+	this->dirLight->direction = glm::normalize(glm::vec3(0.0f) - this->lightPos);
+	this->blinnPhong->SetVec3("dirLight.direction", this->dirLight->direction);
+	this->blinnPhong->SetVec3("dirLight.ambient", this->dirLight->ambientIntensity);
+	this->blinnPhong->SetVec3("dirLight.diffuse", this->dirLight->diffuseIntensity);
+	this->blinnPhong->SetVec3("dirLight.specular", this->dirLight->specularIntensity);
+	this->blinnPhong->SetVec3("pointLight.position", this->pointLight->position);
+	this->blinnPhong->SetVec3("pointLight.ambient", this->pointLight->ambientIntensity);
+	this->blinnPhong->SetVec3("pointLight.diffuse", this->pointLight->diffuseIntensity);
+	this->blinnPhong->SetVec3("pointLight.specular", this->pointLight->specularIntensity);
+	this->blinnPhong->SetFloat("pointLight.constant", this->pointLight->constant);
+	this->blinnPhong->SetFloat("pointLight.linear", this->pointLight->linear);
+	this->blinnPhong->SetFloat("pointLight.quadratic", this->pointLight->quadratic);
+	this->blinnPhong->SetFloat("shininess", this->shininess);
+	this->blinnPhong->SetMat4("model", glm::mat4(1.0f));
+
+	// Draw model.
+	this->sponza->Draw(*this->blinnPhong);
+
+	// Set sphere uniforms for ball player model.
+	this->lightShader->Use();
+	this->lightShader->SetCamera(this->camera, this->windowWidth, this->windowHeight);
+	this->lightShader->SetMat4("model", this->goblin->GetTransform()->modelMatrix);
+	this->lightShader->SetVec3("color", glm::vec3(0.0f, 0.0f, 100.0f));
+
+	// Draw sphere.
+	RenderSphere();
+
+	// Draw directional light source (i.e. sun).
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, this->lightPos);
+	this->lightShader->SetMat4("model", model);
+	this->lightShader->SetVec3("color", glm::vec3(1.0f, 1.0f, 0.0f));
+
+	// Draw sphere.
+	RenderSphere();
+
+	// Bind default framebuffer and texture.
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void RenderingSystem::RenderToBloomFramebuffer()
+{
+	this->horizontal = true;
+	bool firstIteration = true;
+	unsigned amount = 10;
+
+	// Select shader.
+	this->blurShader->Use();
+
+	// Load bright-object texture.
+	this->blurShader->SetInt("image", 0);
+	glActiveTexture(GL_TEXTURE0);
+
+	// Blur bright objects using Gaussian blur to create Bloom effect.
+	for (unsigned int i = 0; i < amount; i++)
+	{
+		// Bind current ping-pong framebuffer.
+		glBindFramebuffer(GL_FRAMEBUFFER, this->pingPongFBO[this->horizontal]);
+		this->blurShader->SetBool("horizontal", this->horizontal);
+
+		// Bind the texture from the previous ping-pong render.
+		glBindTexture(GL_TEXTURE_2D, firstIteration ? this->colorBuffer[1] : this->pingPongColorBuffers[!this->horizontal]);
+
+		// Render the textured quad.
+		RenderQuad();
+
+		// Ping-pong.
+		this->horizontal = !this->horizontal;
+
+		// Toggle from color buffer to pinp-pong color buffers after first.
+		if (firstIteration)
+		{
+			firstIteration = false;
+		}
+	}
+
+	// Unbind framebuffer and texture.
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void RenderingSystem::RenderToScreen()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Select shader.
+	this->hdrShader->Use();
+
+	// Load texture from HDR framebuffer.
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, this->colorBuffer[0]); // Regular scene.
+	this->hdrShader->SetInt("hdrBuffer", 0);
+
+	// Load texture from Bloom framebuffer.
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, this->pingPongColorBuffers[!this->horizontal]); // Blurred bright colors.
+	this->hdrShader->SetInt("bloomBlur", 1);
+
+	// Set uniforms.
+	this->hdrShader->SetBool("bloom", this->bloom);
+	this->hdrShader->SetBool("hdr", this->hdr);
+	this->hdrShader->SetFloat("exposure", this->exposure);
+	this->hdrShader->SetBool("secondGamma", this->secondGamma);
+
+	// Draw to full-screen quad.
+	RenderQuad();
+
+	// Unbind textures.
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void RenderingSystem::RenderToQuad()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Select shader.
+	this->texturedQuadShader->Use();
+
+	// Load textures from G-Buffer.
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, this->gPosition);
+	this->texturedQuadShader->SetInt("gPosition", 0);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, this->gNormal);
+	this->texturedQuadShader->SetInt("gNormal", 1);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, this->gAlbedo);
+	this->texturedQuadShader->SetInt("gAlbedo", 2);
+
+	// Camera uniforms.
+	this->texturedQuadShader->SetCamera(this->camera, this->windowWidth, this->windowHeight);
+
+	// Light uniforms.
+	for (unsigned int i = 0; i < 12; i++)
+	{
+		std::string name = "lightPos[" + std::to_string(i) + "]";
+		if (i < 6)
+		{
+			this->texturedQuadShader->SetVec3(name.c_str(), glm::vec3(-9.8f + (i * 4.05f), 4.2f, 4.75f));
+		}
+		else
+		{
+			this->texturedQuadShader->SetVec3(name.c_str(), glm::vec3(-9.8f + ((i - 6) * 4.05f), 4.2f, -4.79f));
+		}
+	}
+
+	// Draw to full-screen quad.
+	RenderQuad();
+
+	// Unbind texture.
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void RenderingSystem::RenderToGBuffer()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, this->gBuffer);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Select shader.
+	this->blinnPhong2->Use();
+
+	// Set scene uniforms.
+	this->blinnPhong2->SetCamera(this->camera, this->windowWidth, this->windowHeight);
+	this->blinnPhong2->SetMat4("lightSpaceMatrix", GetLightSpaceMatrix());
+	this->blinnPhong2->SetMat4("model", glm::mat4(1.0f));
+
+	// Draw model.
+	this->sponza->Draw(*this->blinnPhong2);
+
+	// Set sphere uniforms for ball player model.
+	this->lightShader->Use();
+	this->lightShader->SetCamera(this->camera, this->windowWidth, this->windowHeight);
+	this->lightShader->SetMat4("model", this->goblin->GetTransform()->modelMatrix);
+	this->lightShader->SetVec3("color", glm::vec3(0.0f, 0.0f, 100.0f));
+
+	// Draw sphere.
+	RenderSphere();
+
+	// Draw directional light source (i.e. sun).
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, this->lightPos);
+	this->lightShader->SetMat4("model", model);
+	this->lightShader->SetVec3("color", glm::vec3(1.0f, 1.0f, 0.0f));
+
+	// Draw sphere.
+	RenderSphere();
+
+	// Bind default framebuffer and texture.
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void RenderingSystem::Update()
+{
+	ClearCurrentFrame();
+
+	// 1. Render shadow map to texture.
+	UpdateShadowMap();
+
+	ClearCurrentFrame();
+
+	// 1.a. Render shadow map texture on full-screen quad.
+	if (this->showDebugShadowMap)
+	{
+		RenderDebugDepthMap();
+		return;
+	}
 
 	// Update camera.
 	this->camera->Update();
 
-	// Define MVP matrices.
-	glm::mat4 projection = glm::perspective(glm::radians(camera->zoom), (float)windowWidth / (float)windowHeight, 0.1f, 1000.0f);
-	glm::mat4 view = camera->GetViewMatrix();
-	glm::mat4 model = glm::mat4(1.0f);
+	// Use deferred rendering or forward rendering.
+	if (this->useGBuffer)
+	{
+		// 2. Render scene to G-Buffer.
+		RenderToGBuffer();
 
-	// Lighting data.
-	glm::vec3 lightDir = glm::normalize(glm::vec3(0.0f, -1.0f, 1.0f));
-	glm::vec3 lightPos = glm::vec3(0.0f, 150.0f, 150.0f);
-	glm::mat4 lightSpaceMatrix = GetLightSpaceMatrix();
-	glm::vec3 lightAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
-	glm::vec3 lightDiffuse = glm::vec3(0.4f, 0.4f, 0.4f);
-	glm::vec3 lightSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
+		// 3. Render texure to full-screen quad.
+		RenderToQuad();
+	}
+	else
+	{
+		// 2.a. Render scene to HDR framebuffer.
+		RenderToHDRFramebuffer();
 
-	glm::vec3 pointLightPos = glm::vec3(-39.7893f, 17.5171f, 25.2649f);
-	glm::vec3 pointLightAmbient = glm::vec3(0.05f, 0.05f, 0.05f);
-	glm::vec3 pointLightDiffuse = glm::vec3(0.8f, 0.8f, 0.8f);
-	glm::vec3 pointLightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
-	float pointLightIntensity = this->noiseMaker->Noise(glfwGetTime());
+		// 2.b. Render scene to Bloom framebuffer.
+		RenderToBloomFramebuffer();
 
-	// Shadow map data.
-	this->standardShader->Use();
-	glActiveTexture(GL_TEXTURE17);
-	glBindTexture(GL_TEXTURE_2D, this->depthMap);
-	this->standardShader->SetInt("shadowMap", 17);
-	glActiveTexture(GL_TEXTURE0);
+		// 3. Combine both framebuffers and render to full-screen quad.
+		RenderToScreen();
+	}
 
-	this->animShader->Use();
-	glActiveTexture(GL_TEXTURE18);
-	glBindTexture(GL_TEXTURE_2D, this->depthMap);
-	this->animShader->SetInt("shadowMap", 18);
-	glActiveTexture(GL_TEXTURE0);
-
-	this->grassShader->Use();
-	glActiveTexture(GL_TEXTURE19);
-	glBindTexture(GL_TEXTURE_2D, this->depthMap);
-	this->grassShader->SetInt("shadowMap", 19);
-	glActiveTexture(GL_TEXTURE0);
-
+	// Old stuff.
+	/*
 	// Draw goblin.
 	this->goblin->GetRenderer()->AnimUpdate(projection,
 										    view,
@@ -666,7 +1110,7 @@ void RenderingSystem::Update()
 	}
 
 	// TODO Volumetric lighting test.
-	/*
+	
 	model = glm::mat4(1.0f);
 	this->volumeLightShader->Use();
 	this->volumeLightShader->SetMat4("model", model);
@@ -682,8 +1126,7 @@ void RenderingSystem::Update()
 	this->volumeLightShader->SetVec3("light.specular", lightSpecular);
 
 	this->treeLevel->Draw(*this->volumeLightShader);
-	*/
-
+	
 	// Grass.
 	this->grassShader->Use();
 	this->grassShader->SetMat4("projection", projection);
@@ -720,7 +1163,7 @@ void RenderingSystem::Update()
 	glBindVertexArray(0);
 
 	// UI elements.
-	/*
+
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.75f, 0.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(0.25f, 1.0f, 0.5f));
@@ -732,10 +1175,8 @@ void RenderingSystem::Update()
 	glBindTexture(GL_TEXTURE_2D, this->particleTexture);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
-	*/
 
 	// Text.
-	/*
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glm::mat4 orthoProjection = glm::ortho(0.0f, static_cast<float>(this->windowWidth), 0.0f, static_cast<float>(this->windowHeight));
@@ -745,8 +1186,7 @@ void RenderingSystem::Update()
 	this->textShader->SetMat4("projection", orthoProjection);
 	this->textShader->SetMat4("model", model);
 	this->uiElement->RenderText(this->textShader, "X", 100.0f, 100.0f, 100.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-	*/
-
+	
 	// Torches.
 	model = glm::translate(glm::mat4(1.0f), pointLightPos + glm::vec3(0.0f, -2.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(5.0f, 5.0f, 5.0f));
@@ -857,9 +1297,7 @@ void RenderingSystem::Update()
 
 	// Draw skybox last.
 	this->skybox->Draw(view, projection);
-
-	// Swap to next render buffer for next frame.
-	glfwSwapBuffers(window->GetGLFWWindow());
+	*/
 }
 
 Camera* RenderingSystem::GetCamera()

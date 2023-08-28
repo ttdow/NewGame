@@ -22,6 +22,10 @@
 #include "Texture.h"
 #include "Material.h"
 #include "Skybox.h"
+#include "ModelClass.h"
+#include "TextureManager.h"
+#include "DirectionalLight.h"
+#include "PointLight.h"
 
 #include "../ecs/Entity.h"
 #include "../ecs/Transform.h"
@@ -52,6 +56,12 @@ private:
 	Shader* pbrShader;
 	Shader* simpleDepthShader;
 	Shader* debugDepthShader;
+	Shader* blinnPhong;
+	Shader* lightShader;
+	Shader* hdrShader;
+	Shader* blurShader;
+	Shader* blinnPhong2;
+	Shader* texturedQuadShader;
 
 	UIElement* uiElement;
 
@@ -64,6 +74,9 @@ private:
 	Model* spider;
 	Model* torch;
 	Model* tree;
+	
+	ModelClass* sponza;
+	ModelClass* lantern;
 
 	AnimationController* goblinAnimController;
 	Animation* gobboWalk;
@@ -81,6 +94,7 @@ private:
 
 	unsigned int blendVAO, blendVBO;
 	unsigned int sphereVAO, sphereVBO, sphereEBO;
+	unsigned int quadVAO, quadVBO;
 	unsigned int indexCount;
 
 	unsigned int depthMapFBO;
@@ -88,6 +102,20 @@ private:
 	unsigned int planeVAO, planeVBO;
 	unsigned int shadowMapFBO;
 	unsigned int shadowMap;
+
+	unsigned int hdrFBO;
+	unsigned int colorBuffer[2];
+	unsigned int rboDepth;
+	unsigned int pingPongFBO[2];
+	unsigned int pingPongColorBuffers[2];
+	
+	unsigned int gBuffer;
+	unsigned int gPosition;
+	unsigned int gNormal;
+	unsigned int gAlbedo;
+	unsigned int gDepth;
+
+	bool horizontal;
 
 	int windowWidth;
 	int windowHeight;
@@ -97,12 +125,44 @@ private:
 
 	PerlinNoise* noiseMaker;
 
+	void CreateGBuffer();
+	void RenderQuad();
 	void RenderSphere();
 	void ConfigureShaderAndMatrices();
 	void CreateShadowMap();
+	glm::mat4 GetLightSpaceMatrix();
+	void ClearCurrentFrame();
+	void UpdateShadowMap();
+	void RenderDebugDepthMap();
+	void RenderToHDRFramebuffer();
+	void RenderToBloomFramebuffer();
+	void RenderToScreen();
+	void RenderToGBuffer();
+	void RenderToQuad();
 
 public:
 	
+	bool showDebugShadowMap;
+	glm::vec3 lightPos;
+	glm::vec4 orthoValues;
+	float nearPlane;
+	float farPlane;
+	glm::vec3 lightColor;
+	float minBias;
+	bool firstGamma;
+	bool secondGamma;
+	bool hdr;
+	float shininess;
+	float exposure;
+	bool bloom;
+	float bloomBrightness;
+	bool debugNormalMap;
+	bool debugVertexNormals;
+	bool useGBuffer;
+
+	DirectionalLight* dirLight;
+	PointLight* pointLight;
+
 	Model* treeLevel;
 
 	Entity* goblin;

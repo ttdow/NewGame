@@ -63,8 +63,8 @@ std::vector<Vertex> CubeVertices::GetVertices()
 		vert.normal.y = vertexArray[i+4];
 		vert.normal.z = vertexArray[i+5];
 
-		vert.texCoords.x = vertexArray[i+6];
-		vert.texCoords.y = vertexArray[i+7];
+		//vert.texCoords.x = vertexArray[i+6];
+		//vert.texCoords.y = vertexArray[i+7];
 
 		vertices.push_back(vert);
 	}

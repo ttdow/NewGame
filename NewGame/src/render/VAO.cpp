@@ -13,6 +13,11 @@ void VAO::Bind()
 	glBindVertexArray(id);
 }
 
+void VAO::Unbind()
+{
+    glBindVertexArray(0);
+}
+
 void VAO::Setup()
 {
     if (this->animated)

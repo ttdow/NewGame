@@ -9,8 +9,8 @@ class Window
 {
 private:
 
-	const unsigned int SCR_WIDTH = 1280;
-	const unsigned int SCR_HEIGHT = 720;
+	unsigned int SCR_WIDTH = 1280;
+	unsigned int SCR_HEIGHT = 720;
 
 	GLFWwindow* window;
 

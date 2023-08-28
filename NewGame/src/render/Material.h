@@ -9,12 +9,16 @@ class Material
 {
 public:
 
-	TextureClass* albedo;
-	TextureClass* normal;
-	TextureClass* metallic;
-	TextureClass* roughness;
-	TextureClass* ao;
+	std::string name;
+	//std::string filePath;
+	unsigned int id;
 
-	Material(std::string dir);
+	std::string albedoMap;
+	std::string normalMap;
+	std::string metallicMap;
+	std::string roughnessMap;
+	//std::string aoMap;
+
+	Material(std::string name);
 	void BindMaterial();
 };

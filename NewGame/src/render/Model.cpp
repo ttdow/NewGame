@@ -105,11 +105,11 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 			// TODO a vertex can contain up to 8 different texture coords.
 			vec.x = mesh->mTextureCoords[0][i].x;
 			vec.y = mesh->mTextureCoords[0][i].y;
-			vertex.texCoords = vec;
+			//vertex.texCoords = vec;
 		}
 		else
 		{
-			vertex.texCoords = glm::vec2(0.0f, 0.0f);
+			//vertex.texCoords = glm::vec2(0.0f, 0.0f);
 		}
 
 		// Add the new vertex to the list.

@@ -95,32 +95,37 @@ vec3 CalcPointLighting(PointLight light, vec3 fragPos, vec3 color, vec3 normal, 
 void main()
 {
     vec4 texColor = texture(texture_diffuse1, texCoords);
+    vec3 norm = texture(texture_normal1, texCoords).rgb;
+    norm = normalize(norm * 2.0 - 1.0);
 
-    if (texColor.a < 0.5)
-    {
-        discard;
-    }
+    //if (texColor.a < 0.5)
+    //{
+    //    discard;
+    //}
 
     vec3 color = vec3(texColor);
-    vec3 norm = normalize(normal);
+    //vec3 norm = normalize(normal);
     vec3 viewDir = normalize(viewPos - fragPos);
     vec3 lightDir = normalize(directionalLight.direction);
 
     // Directional lighting.
     vec3 directional = CalcDirectionalLighting(directionalLight, color, norm, viewDir);
-    vec3 point = CalcPointLighting(pointLight, fragPos, vec3(1.0, 0.0, 0.0), norm, viewDir);
+    //vec3 point = CalcPointLighting(pointLight, fragPos, vec3(1.0, 0.0, 0.0), norm, viewDir);
 
     // Ambient lighting.
-    vec3 ambient = directionalLight.ambient * color * 3.0;
+    vec3 ambient = directionalLight.ambient * color;
 
     // Shadows
-    vec3 projCoords = (fragPosLightSpace.xyz / fragPosLightSpace.w * 0.5) + 0.5;
-    float closestDepth = texture(shadowMap, projCoords.xy).r;
-    float currentDepth = projCoords.z;
-    float bias = max(0.05 * (1.0 - dot(norm, lightDir)), 0.005);
-    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+    //vec3 projCoords = (fragPosLightSpace.xyz / fragPosLightSpace.w * 0.5) + 0.5;
+    //float closestDepth = texture(shadowMap, projCoords.xy).r;
+    //float currentDepth = projCoords.z;
+    //float bias = max(0.05 * (1.0 - dot(norm, lightDir)), 0.005);
+    //float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
 
     // Blinn-Phong lighting.
-    vec3 result = (ambient + point + ((1.0 - shadow) * directional)) * color;
+    //vec3 result = (ambient + point + ((1.0 - shadow) * directional)) * color;
+    vec3 result = ambient + directional;
     fragColor = vec4(result, 1.0);
+
+    //fragColor = texColor;
 }

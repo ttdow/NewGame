@@ -8,7 +8,12 @@ Window::Window()
 	glfwWindowHint(GLFW_SAMPLES, 4); // MSAA
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	this->window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "NewGame", NULL, NULL);
+	GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+	this->SCR_WIDTH = mode->width;
+	this->SCR_HEIGHT = mode->height;
+
+	this->window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "NewGame", monitor, NULL);
 }
 
 Window::~Window()

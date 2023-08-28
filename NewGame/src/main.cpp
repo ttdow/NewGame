@@ -1,5 +1,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 
+#include <imgui/imgui.h>
+#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/backends/imgui_impl_opengl3.h>
+
 #include "util/Window.h"
 #include "util/Time.h"
 #include "input/InputSystem.h"
@@ -14,6 +18,7 @@
 #include "phys/PhysicsSystem.h"
 #include "util/PerlinNoise.h"
 #include "audio/AudioSystem.h"
+#include "util/DebugUI.h"
 
 std::vector<glm::vec3> BSpline(std::vector<glm::vec3>& controlPoints)
 {
@@ -120,11 +125,15 @@ int main()
 	PlayerController* playerController = new PlayerController();
 	inputSystem->playerController = playerController;
 
-	PhysicsSystem* physicsSystem = new PhysicsSystem();
-	physicsSystem->SetEnvironmentMesh(renderingSystem->treeLevel);
-	physicsSystem->SetPlayerCharacterTransform(renderingSystem->goblinTransform);
+	//PhysicsSystem* physicsSystem = new PhysicsSystem();
+	
+	//physicsSystem->SetEnvironmentMesh(renderingSystem->treeLevel);
+
+	//physicsSystem->SetPlayerCharacterTransform(renderingSystem->goblinTransform);
+
 
 	// ----------------------- EVENT SYSTEM TESTING ---------------------------
+	/*
 	EventSystem* eventSystem = new EventSystem();
 	GameObject gameObject;
 
@@ -133,8 +142,10 @@ int main()
 	std::string eventName = "EventTest";
 	int enemyData = 42;
 	eventSystem->Notify(eventName, &enemyData);
+	*/
 
 	// ----------------------- Road generation test ---------------------------
+	/*
 	std::vector<glm::vec3> controlPoints;
 	controlPoints.push_back(glm::vec3(0.0f, 0.0f, 0.0f));
 	controlPoints.push_back(glm::vec3(0.0f, 0.0f, 5.0f));
@@ -154,7 +165,6 @@ int main()
 	
 	std::vector<glm::vec3> roadMesh = GenerateRoadMesh(controlPoints, 3.0f);
 
-	/*
 	std::cout << "x,z" << std::endl;
 	for (unsigned int i = 0; i < roadMesh.size(); i++)
 	{
@@ -164,20 +174,29 @@ int main()
 
 	// ------------------------ GAME STATE TESTING ----------------------------
 
+	/*
 	GameManager gameManager;
 	StateManager stateManager;
-	//GameState* testState = new RaceTurnState(&gameManager, &stateManager);
-	//std::cout << testState->name << std::endl;
-	//testState->name = "Race Turn State";
-	//std::cout << testState->name << std::endl;
-	//stateManager.Initialize(testState);
+	GameState* testState = new RaceTurnState(&gameManager, &stateManager);
+	std::cout << testState->name << std::endl;
+	testState->name = "Race Turn State";
+	std::cout << testState->name << std::endl;
+	stateManager.Initialize(testState);
 
 	AudioSystem audioSystem;
 	audioSystem.Load("shamanistic.wav");
+	*/
+
+	// ------------------------------ IMGUI -----------------------------------
+
+	DebugUI* debugUI = new DebugUI(myWindow->GetGLFWWindow());
+	debugUI->Setup();
 
 	// ------------------------------ GAME LOOP -------------------------------
 	while (!myWindow->ShouldClose())
 	{
+		debugUI->NewFrame(renderingSystem);
+
 		// Update global application time.
 		time->Update();
 
@@ -188,22 +207,28 @@ int main()
 		inputSystem->Update();
 
 		// Physics.
-		physicsSystem->Update();
+		//physicsSystem->Update();
 
 		// Render.
 		renderingSystem->Update();
 
 		// Audio.
-		audioSystem.UpdateStream();
+		//audioSystem.UpdateStream();
+
+		debugUI->EndFrame();
+		glfwSwapBuffers(myWindow->GetGLFWWindow());
 	}
 
-	delete(physicsSystem);
+	debugUI->Cleanup();
+
+	//delete(physicsSystem);
 	delete(playerController);
 	delete(time);
-	delete(eventSystem);
+	//delete(eventSystem);
 	delete(renderingSystem);
 	delete(profiler);
 	delete(myWindow);
+	delete(debugUI);
 
 	return 0;
 }

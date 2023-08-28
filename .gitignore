@@ -1,6 +1,7 @@
 .vs/
 bin/
 int/
+NewGame/res/obj
 
 *.pdb
 *.user

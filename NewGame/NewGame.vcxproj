@@ -96,7 +96,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc\freetype;$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\imgui;$(ProjectDir)inc\freetype;$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -113,7 +113,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc\freetype;$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\imgui;$(ProjectDir)inc\freetype;$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,7 +130,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc\freetype;$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\imgui;$(ProjectDir)inc\freetype;$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,7 +147,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)inc\freetype;$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)inc\imgui;$(ProjectDir)inc\freetype;$(ProjectDir)inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -160,6 +160,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="inc\glm\detail\glm.cpp" />
+    <ClCompile Include="inc\imgui\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="inc\imgui\backends\imgui_impl_opengl2.cpp" />
+    <ClCompile Include="inc\imgui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="inc\imgui\imgui.cpp" />
+    <ClCompile Include="inc\imgui\imgui_demo.cpp" />
+    <ClCompile Include="inc\imgui\imgui_draw.cpp" />
+    <ClCompile Include="inc\imgui\imgui_tables.cpp" />
+    <ClCompile Include="inc\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\anim\AnimationController.cpp" />
     <ClCompile Include="src\audio\AudioSystem.cpp" />
     <ClCompile Include="src\ecs\Entity.cpp" />
@@ -184,19 +192,25 @@
     <ClCompile Include="inc\glad\glad.c" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\render\CubeVertices.cpp" />
+    <ClCompile Include="src\render\DirectionalLight.cpp" />
     <ClCompile Include="src\render\EBO.cpp" />
     <ClCompile Include="src\render\Material.cpp" />
     <ClCompile Include="src\render\Mesh.cpp" />
+    <ClCompile Include="src\render\MeshClass.cpp" />
     <ClCompile Include="src\render\MeshRenderer.cpp" />
     <ClCompile Include="src\render\Model.cpp" />
+    <ClCompile Include="src\render\ModelClass.cpp" />
+    <ClCompile Include="src\render\PointLight.cpp" />
     <ClCompile Include="src\render\RenderingSystem.cpp" />
     <ClCompile Include="src\render\Shader.cpp" />
     <ClCompile Include="src\render\Skybox.cpp" />
     <ClCompile Include="src\render\Texture.cpp" />
+    <ClCompile Include="src\render\TextureManager.cpp" />
     <ClCompile Include="src\render\VAO.cpp" />
     <ClCompile Include="src\render\VBO.cpp" />
     <ClCompile Include="src\ui\EventSystem.cpp" />
     <ClCompile Include="src\ui\UIElement.cpp" />
+    <ClCompile Include="src\util\DebugUI.cpp" />
     <ClCompile Include="src\util\PerlinNoise.cpp" />
     <ClCompile Include="src\util\Profiler.cpp" />
     <ClCompile Include="src\util\Time.cpp" />
@@ -370,6 +384,9 @@
     <None Include="res\obj\gobbo_walk.fbx" />
     <None Include="res\obj\peach_castle\peach_castle.mtl" />
     <None Include="res\obj\room.mtl" />
+    <None Include="res\obj\sponza\sponza-f1.mtl" />
+    <None Include="res\obj\sponza\sponza-lantern.mtl" />
+    <None Include="res\obj\sponza\textures\kloppenheim_05_4k.hdr" />
     <None Include="res\obj\torch\torch.mtl" />
     <None Include="res\obj\tree\tree_level.mtl" />
     <None Include="res\obj\vault_boy.mtl" />
@@ -381,6 +398,11 @@
     <None Include="res\shaders\anim.vs" />
     <None Include="res\shaders\blending.fs" />
     <None Include="res\shaders\blending.vs" />
+    <None Include="res\shaders\blinnPhong.fs" />
+    <None Include="res\shaders\blinnPhong.vs" />
+    <None Include="res\shaders\blinnPhong2.fs" />
+    <None Include="res\shaders\blur.fs" />
+    <None Include="res\shaders\blur.vs" />
     <None Include="res\shaders\collider.fs" />
     <None Include="res\shaders\collider.vs" />
     <None Include="res\shaders\colors.fs" />
@@ -390,10 +412,12 @@
     <None Include="res\shaders\fragment.shader" />
     <None Include="res\shaders\grass.fs" />
     <None Include="res\shaders\grass.vs" />
+    <None Include="res\shaders\hdr.fs" />
+    <None Include="res\shaders\hdr.vs" />
     <None Include="res\shaders\lighting_maps.fs" />
     <None Include="res\shaders\lighting_maps.vs" />
-    <None Include="res\shaders\light_cube.fs" />
-    <None Include="res\shaders\light_cube.vs" />
+    <None Include="res\shaders\light.fs" />
+    <None Include="res\shaders\light.vs" />
     <None Include="res\shaders\materials.fs" />
     <None Include="res\shaders\materials.vs" />
     <None Include="res\shaders\model_loading.fs" />
@@ -406,6 +430,8 @@
     <None Include="res\shaders\particle.vs" />
     <None Include="res\shaders\pbr.fs" />
     <None Include="res\shaders\pbr.vs" />
+    <None Include="res\shaders\quadTexture.fs" />
+    <None Include="res\shaders\quadTexture.vs" />
     <None Include="res\shaders\simpleDepthShader.fs" />
     <None Include="res\shaders\simpleDepthShader.vs" />
     <None Include="res\shaders\skybox.fs" />
@@ -881,6 +907,16 @@
     <ClInclude Include="inc\glm\vec3.hpp" />
     <ClInclude Include="inc\glm\vec4.hpp" />
     <ClInclude Include="inc\glm\vector_relational.hpp" />
+    <ClInclude Include="inc\imgui\backends\imgui_impl_glfw.h" />
+    <ClInclude Include="inc\imgui\backends\imgui_impl_opengl2.h" />
+    <ClInclude Include="inc\imgui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="inc\imgui\backends\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="inc\imgui\imconfig.h" />
+    <ClInclude Include="inc\imgui\imgui.h" />
+    <ClInclude Include="inc\imgui\imgui_internal.h" />
+    <ClInclude Include="inc\imgui\imstb_rectpack.h" />
+    <ClInclude Include="inc\imgui\imstb_textedit.h" />
+    <ClInclude Include="inc\imgui\imstb_truetype.h" />
     <ClInclude Include="inc\KHR\khrplatform.h" />
     <ClInclude Include="src\anim\AnimationController.h" />
     <ClInclude Include="src\audio\AudioClip.h" />
@@ -909,11 +945,16 @@
     <ClInclude Include="src\render\Bone.h" />
     <ClInclude Include="src\render\Camera.h" />
     <ClInclude Include="src\ecs\ComponentManager.h" />
+    <ClInclude Include="src\render\DirectionalLight.h" />
     <ClInclude Include="src\render\EBO.h" />
     <ClInclude Include="src\render\Material.h" />
+    <ClInclude Include="src\render\MeshClass.h" />
     <ClInclude Include="src\render\MeshRenderer.h" />
+    <ClInclude Include="src\render\ModelClass.h" />
+    <ClInclude Include="src\render\PointLight.h" />
     <ClInclude Include="src\render\Skybox.h" />
     <ClInclude Include="src\render\Texture.h" />
+    <ClInclude Include="src\render\TextureManager.h" />
     <ClInclude Include="src\render\VBO.h" />
     <ClInclude Include="src\render\Mesh.h" />
     <ClInclude Include="src\render\Model.h" />
@@ -925,6 +966,7 @@
     <ClInclude Include="src\render\Vertex.h" />
     <ClInclude Include="src\ui\EventSystem.h" />
     <ClInclude Include="src\ui\UIElement.h" />
+    <ClInclude Include="src\util\DebugUI.h" />
     <ClInclude Include="src\util\PerlinNoise.h" />
     <ClInclude Include="src\util\Profiler.h" />
     <ClInclude Include="src\util\Time.h" />
@@ -940,6 +982,141 @@
     <Image Include="res\obj\peach_castle\Windows.png" />
     <Image Include="res\obj\roughness.jpg" />
     <Image Include="res\obj\specular.jpg" />
+    <Image Include="res\obj\sponza\textures\arch_stone_wall_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\arch_stone_wall_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\arch_stone_wall_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\arch_stone_wall_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\arch_stone_wall_01_Roughnessarch_stone_wall_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\brickwall_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\brickwall_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\brickwall_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\brickwall_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\brickwall_01_Roughnessbrickwall_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\brickwall_02_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\brickwall_02_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\brickwall_02_Normal.png" />
+    <Image Include="res\obj\sponza\textures\brickwall_02_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\brickwall_02_Roughnessbrickwall_02_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\ceiling_plaster_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\ceiling_plaster_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\ceiling_plaster_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\ceiling_plaster_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\ceiling_plaster_01_Roughnessceiling_plaster_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\ceiling_plaster_02_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\ceiling_plaster_02_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\ceiling_plaster_02_Normal.png" />
+    <Image Include="res\obj\sponza\textures\ceiling_plaster_02_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\ceiling_plaster_02_Roughnessceiling_plaster_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\col_1stfloor_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\col_1stfloor_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\col_1stfloor_Normal.png" />
+    <Image Include="res\obj\sponza\textures\col_1stfloor_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\col_1stfloor_Roughnesscol_1stfloor_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\col_brickwall_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\col_brickwall_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\col_brickwall_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\col_brickwall_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\col_brickwall_01_Roughnesscolumn_brickwall_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\col_brickwall_01_Roughnesscol_brickwall_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\col_head_1stfloor_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\col_head_1stfloor_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\col_head_1stfloor_Normal.png" />
+    <Image Include="res\obj\sponza\textures\col_head_1stfloor_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\col_head_1stfloor_Roughnesscol_head_1stfloor_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\col_head_2ndfloor_02_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\col_head_2ndfloor_02_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\col_head_2ndfloor_02_Normal.png" />
+    <Image Include="res\obj\sponza\textures\col_head_2ndfloor_02_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\col_head_2ndfloor_02_Roughnesscol_head_2ndfloor_02_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\col_head_2ndfloor_03_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\col_head_2ndfloor_03_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\col_head_2ndfloor_03_Normal.png" />
+    <Image Include="res\obj\sponza\textures\col_head_2ndfloor_03_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\col_head_2ndfloor_03_Roughnesscol_head_2ndfloor_03_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\curtain_fabric_blue_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\curtain_fabric_green_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\curtain_fabric_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\curtain_fabric_Normal.png" />
+    <Image Include="res\obj\sponza\textures\curtain_fabric_red_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\curtain_fabric_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\dirt_decal_01.png" />
+    <Image Include="res\obj\sponza\textures\dirt_decal_01_alpha.png" />
+    <Image Include="res\obj\sponza\textures\dirt_decal_01_dirt_decal_01_mask_alpha_dirt_decal_Opacity.png" />
+    <Image Include="res\obj\sponza\textures\dirt_decal_01_dirt_decal_01_mask_gltf_alpha_dirt_decal_Opacity.png" />
+    <Image Include="res\obj\sponza\textures\dirt_decal_01_invmask.png" />
+    <Image Include="res\obj\sponza\textures\dirt_decal_01_mask.png" />
+    <Image Include="res\obj\sponza\textures\dirt_decal_01_mask_gltf.png" />
+    <Image Include="res\obj\sponza\textures\dirt_decal_01_mask_usd.png" />
+    <Image Include="res\obj\sponza\textures\door_stoneframe_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\door_stoneframe_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\door_stoneframe_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\door_stoneframe_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\door_stoneframe_01_Roughnessdoor_stoneframe_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\door_stoneframe_02_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\door_stoneframe_02_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\door_stoneframe_02_Normal.png" />
+    <Image Include="res\obj\sponza\textures\door_stoneframe_02_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\door_stoneframe_02_Roughnessdoor_stoneframe_02_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\floor_tiles_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\floor_tiles_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\floor_tiles_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\floor_tiles_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\floor_tiles_01_Roughnessfloor_tiles_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\lionhead_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\lionhead_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\lionhead_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\lionhead_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\lionhead_01_Roughnesslionhead_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\metal_door_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\metal_door_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\metal_door_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\metal_door_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\metal_door_01_Roughnessmetal_door_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\ornament_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\ornament_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\ornament_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\ornament_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\ornament_01_Roughnessornament_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\roof_tiles_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\roof_tiles_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\roof_tiles_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\roof_tiles_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\roof_tiles_01_Roughnessroof_tiles_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\stones_2ndfloor_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\stones_2ndfloor_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\stones_2ndfloor_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\stones_2ndfloor_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\stones_2ndfloor_01_Roughnessstones_2ndfloor_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\stone_01_tile_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\stone_01_tile_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\stone_01_tile_Normal.png" />
+    <Image Include="res\obj\sponza\textures\stone_01_tile_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\stone_01_tile_Roughnessstone_01_tile_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\stone_trims_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\stone_trims_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\stone_trims_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\stone_trims_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\stone_trims_01_Roughnessstone_trims_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\stone_trims_02_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\stone_trims_02_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\stone_trims_02_Normal.png" />
+    <Image Include="res\obj\sponza\textures\stone_trims_02_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\stone_trims_02_Roughnessstone_trims_02_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\window_frame_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\window_frame_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\window_frame_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\window_frame_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\window_frame_01_Roughnesswindow_frame_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\wood_door_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\wood_door_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\wood_door_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\wood_door_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\wood_door_01_Roughnesswood_door_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\wood_tile_01_BaseColor.png" />
+    <Image Include="res\obj\sponza\textures\wood_tile_01_Metalness.png" />
+    <Image Include="res\obj\sponza\textures\wood_tile_01_Normal.png" />
+    <Image Include="res\obj\sponza\textures\wood_tile_01_Roughness.png" />
+    <Image Include="res\obj\sponza\textures\wood_tile_01_Roughnesswood_tile_01_Metalness.png" />
     <Image Include="res\obj\texture.jpg" />
     <Image Include="res\obj\texture2.jpg" />
     <Image Include="res\obj\torch\torch.png" />

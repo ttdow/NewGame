@@ -5,7 +5,7 @@ Camera::Camera(Transform* playerTransform)
 	this->playerTransform = playerTransform;
 
 	this->position = *playerTransform->position;
-	this->position.z -= 10.0f;
+	this->position.z -= 1.0f;
 	this->position.y += glm::abs(this->position.z) * glm::tan(glm::radians(30.0f));
 
 	this->front = glm::normalize(*this->playerTransform->position - this->position);
@@ -13,12 +13,14 @@ Camera::Camera(Transform* playerTransform)
 	this->up = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->worldUp = this->up;
 
+	this->right = glm::cross(this->front, this->up);
+
 	this->zoom = 45.0f;
 
 	this->freeCamera = false;
 	this->moveCamera = false;
 
-	this->radialDistance = glm::sqrt((20.0f * 20.0f) + (glm::abs(this->position.z) * glm::tan(glm::radians(30.0f))) * (glm::abs(this->position.z) * glm::tan(glm::radians(30.0f))));
+	this->radialDistance = glm::sqrt((10.0f * 10.0f) + (glm::abs(this->position.z) * glm::tan(glm::radians(30.0f))) * (glm::abs(this->position.z) * glm::tan(glm::radians(30.0f))));
 	this->inclination = 0.0f;
 	this->azimuth = -180.0f;
 }

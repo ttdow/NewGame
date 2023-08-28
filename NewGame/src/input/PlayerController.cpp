@@ -13,6 +13,7 @@ void PlayerController::Reset()
 {
 	this->currentSpeed = 0.0f;
 	this->currentTurnSpeed = 0.0f;
+	this->currentFlySpeed = 0.0f;
 }
 
 void PlayerController::Update(RenderingSystem* renderingSystem)
@@ -23,10 +24,13 @@ void PlayerController::Update(RenderingSystem* renderingSystem)
 
 	float distance = this->currentSpeed * this->time->GetDeltaTime();
 
-	float dx = distance * glm::sin(orientation.y);
-	float dz = distance * glm::cos(orientation.y);
+	//float dx = distance * glm::sin(orientation.y);
+	//float dz = distance * glm::cos(orientation.y);
+	float dx = this->currentSpeed * this->time->GetDeltaTime();
+	float dy = this->currentFlySpeed * this->time->GetDeltaTime();
+	float dz = this->currentTurnSpeed * this->time->GetDeltaTime();
 
-	glm::vec3 move = glm::vec3(dx, 0.0f, dz);
+	glm::vec3 move = glm::vec3(dx, dy, dz);
 	glm::vec3 position = *renderingSystem->goblin->GetTransform()->position;
 	position += move;
 
@@ -54,6 +58,12 @@ void PlayerController::HandleInput(PlayerMovement input)
 			break;
 		case ATTACK:
 			// TODO
+			break;
+		case UP:
+			this->currentFlySpeed = FLY_SPEED;
+			break;
+		case DOWN:
+			this->currentFlySpeed = -FLY_SPEED;
 			break;
 	}
 }
