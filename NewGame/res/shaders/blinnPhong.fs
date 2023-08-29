@@ -60,6 +60,7 @@ uniform sampler2D shadowMap;
 uniform float minBias;
 uniform bool debugNormalMap;
 uniform bool debugVertexNormals;
+uniform int kernelSize;
 
 vec3 GetNormalFromMap()
 {
@@ -82,10 +83,6 @@ LightComponent CalcDirectionalLighting(DirLight light, vec3 normal, vec3 color, 
 {
     // Ambient.
     vec3 ambient = light.ambient * color;
-
-    // normal.x * lightDir.x
-    // normal.y * lightDir.y
-    // normal.z * lightDir.z
 
     // Diffuse.
     float diff = max(dot(normal, lightDir), 0.0);
@@ -142,9 +139,22 @@ float CalcShadow(vec3 normal, vec3 lightDir)
 
     // Apply bias to reduce shadow acne.
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), minBias);
+    
+    // Check for shadows in a 3x3 texel radius and blur.
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    int halfKernelSize = kernelSize / 2;
+    for (int x = -halfKernelSize; x <= halfKernelSize; x++)
+    {
+        for (int y = -halfKernelSize; y <= halfKernelSize; y++)
+        {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+            shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
+        }
+    }
 
-    // Calculate if current frag is in shadow.
-    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+    // Reduce shadow by 9 for 3x3 kernel.
+    shadow /= (kernelSize * kernelSize);
 
     return shadow;
 }

@@ -62,6 +62,8 @@ private:
 	Shader* blurShader;
 	Shader* blinnPhong2;
 	Shader* texturedQuadShader;
+	Shader* ssaoMapShader;
+	Shader* viewSpaceShader;
 
 	UIElement* uiElement;
 
@@ -115,6 +117,11 @@ private:
 	unsigned int gAlbedo;
 	unsigned int gDepth;
 
+	unsigned int noiseTexture;
+	unsigned int ssaoFBO;
+	unsigned int ssaoBuffer;
+	unsigned int ssaoBlurFBO;
+
 	bool horizontal;
 
 	int windowWidth;
@@ -122,13 +129,15 @@ private:
 
 	std::vector<glm::vec3> vegetation;
 	std::vector<glm::mat4> treeModelMatrices;
+	std::vector<glm::vec3> ssaoKernel;
+	std::vector<glm::vec3> ssaoNoise;
 
 	PerlinNoise* noiseMaker;
 
 	void CreateGBuffer();
+	void CreateSSAOData();
 	void RenderQuad();
 	void RenderSphere();
-	void ConfigureShaderAndMatrices();
 	void CreateShadowMap();
 	glm::mat4 GetLightSpaceMatrix();
 	void ClearCurrentFrame();
@@ -137,7 +146,8 @@ private:
 	void RenderToHDRFramebuffer();
 	void RenderToBloomFramebuffer();
 	void RenderToScreen();
-	void RenderToGBuffer();
+	void RenderToGBuffer(Shader* shader);
+	void RenderDebugSSAOMap();
 	void RenderToQuad();
 
 public:
@@ -159,6 +169,8 @@ public:
 	bool debugNormalMap;
 	bool debugVertexNormals;
 	bool useGBuffer;
+	int kernelSize;
+	bool showDebugSSAOMap;
 
 	DirectionalLight* dirLight;
 	PointLight* pointLight;

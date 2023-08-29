@@ -701,6 +701,9 @@
     <None Include="res\shaders\blinnPhong2.fs" />
     <None Include="res\shaders\quadTexture.vs" />
     <None Include="res\shaders\quadTexture.fs" />
+    <None Include="res\shaders\blinnPhong2.vs" />
+    <None Include="res\shaders\ssao.vs" />
+    <None Include="res\shaders\ssao.fs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\glad\glad.h">

@@ -31,6 +31,7 @@ void DebugUI::NewFrame(RenderingSystem* renderingSystem)
 	ImGui::Begin("Rendering System");
 
 	ImGui::Checkbox("Use G-Buffer", &renderingSystem->useGBuffer);
+	ImGui::Checkbox("Show SSAO Map", &renderingSystem->showDebugSSAOMap);
 
 	ImGui::Checkbox("First Gamma", &renderingSystem->firstGamma);
 	ImGui::Checkbox("Second Gamma", &renderingSystem->secondGamma);
@@ -108,6 +109,8 @@ void DebugUI::NewFrame(RenderingSystem* renderingSystem)
 
 	ImGui::Text("Shadows");
 	ImGui::Checkbox("Show Debug Shadow Map", &renderingSystem->showDebugShadowMap);
+
+	ImGui::InputInt("kernelSize", &renderingSystem->kernelSize, 1);
 
 	glm::vec3& lightPos = renderingSystem->lightPos;
 	ImGui::InputFloat("lightPos.x", &lightPos.x, 1.0f, 10.0f);

@@ -58,6 +58,8 @@ RenderingSystem::RenderingSystem(Window *window)
 	this->blurShader = new Shader("res/shaders/blur.vs", "res/shaders/blur.fs");
 	this->blinnPhong2 = new Shader("res/shaders/blinnPhong.vs", "res/shaders/blinnPhong2.fs");
 	this->texturedQuadShader = new Shader("res/shaders/quadTexture.vs", "res/shaders/quadTexture.fs");
+	this->viewSpaceShader = new Shader("res/shaders/blinnPhong2.vs", "res/shaders/blinnPhong2.fs");
+	this->ssaoMapShader = new Shader("res/shaders/ssao.vs", "res/shaders/ssao.fs");
 
 	/*
 	this->ourShader = new Shader("res/shaders/model_loading.vs", "res/shaders/model_loading.fs");
@@ -77,6 +79,7 @@ RenderingSystem::RenderingSystem(Window *window)
 	
 	// Tracked uniforms.
 	this->showDebugShadowMap = false;
+	this->showDebugSSAOMap = false;
 	this->orthoValues = glm::vec4(-22.5f, 22.5f, -22.5f, 22.5f);
 	this->nearPlane = 0.1f;
 	this->farPlane = 35.0f;
@@ -92,6 +95,7 @@ RenderingSystem::RenderingSystem(Window *window)
 	this->debugNormalMap = false;
 	this->debugVertexNormals = false;
 	this->horizontal = true;
+	this->kernelSize = 3;
 
 	this->quadVAO = 0;
 	this->sphereVAO = 0;
@@ -420,6 +424,8 @@ RenderingSystem::RenderingSystem(Window *window)
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	CreateGBuffer();
+
+	CreateSSAOData();
 }
 
 RenderingSystem::~RenderingSystem()
@@ -445,6 +451,7 @@ RenderingSystem::~RenderingSystem()
 	delete(this->lightShader);
 	delete(this->hdrShader);
 	delete(this->blurShader);
+	delete(this->ssaoMapShader);
 
 	// Clean up models.
 	delete(this->treeLevel);
@@ -498,6 +505,8 @@ void RenderingSystem::CreateGBuffer()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, this->windowWidth, this->windowHeight, 0, GL_RGBA, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->gPosition, 0);
 
 	// Normal.
@@ -534,6 +543,60 @@ void RenderingSystem::CreateGBuffer()
 
 	// Re-bind default framebuffer and renderbuffer.
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderingSystem::CreateSSAOData()
+{
+	// Generate sample kernel.
+	std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0);
+	std::default_random_engine generator;
+	for (unsigned int i = 0; i < 64; i++)
+	{
+		glm::vec3 sample(randomFloats(generator) * 2.0 - 1.0, 
+						 randomFloats(generator) * 2.0 - 1.0, 
+						 randomFloats(generator));
+
+		sample = glm::normalize(sample);
+		sample *= randomFloats(generator);
+		
+		float scale = float(i) / 64.0f;
+		scale = 0.1f + (scale * scale) * (1.0f - 0.1f);
+		
+		sample *= scale;
+		this->ssaoKernel.push_back(sample);
+	}
+
+	// Generate noise texture.
+	for (unsigned int i = 0; i < 16; i++)
+	{
+		glm::vec3 noise(randomFloats(generator) * 2.0f - 1.0f,
+						randomFloats(generator) * 2.0f - 1.0f,
+						0.0f);
+
+		this->ssaoNoise.push_back(noise);
+	}
+
+	glGenTextures(1, &this->noiseTexture);
+	glBindTexture(GL_TEXTURE_2D, this->noiseTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, 4, 0, GL_RGB, GL_FLOAT, &this->ssaoNoise[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// Create SSAO framebuffer.
+	glGenFramebuffers(1, &this->ssaoFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, this->ssaoFBO);
+
+	glGenTextures(1, &this->ssaoBuffer);
+	glBindTexture(GL_TEXTURE_2D, this->ssaoBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, this->windowWidth, this->windowHeight, 0, GL_RED, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->ssaoBuffer, 0);
 }
 
 void RenderingSystem::RenderQuad()
@@ -686,6 +749,7 @@ void RenderingSystem::CreateShadowMap()
 	glGenTextures(1, &this->shadowMap);
 	glBindTexture(GL_TEXTURE_2D, this->shadowMap);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, this->windowWidth, this->windowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 4096, 4096, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -723,23 +787,6 @@ glm::mat4 RenderingSystem::GetLightSpaceMatrix()
 	return lightSpaceMatrix;
 }
 
-void RenderingSystem::ConfigureShaderAndMatrices()
-{
-	this->simpleDepthShader->Use();
-	this->simpleDepthShader->SetMat4("lightSpaceMatrix", GetLightSpaceMatrix());
-
-	glViewport(0, 0, this->windowWidth, this->windowHeight);
-	glBindFramebuffer(GL_FRAMEBUFFER, this->depthMapFBO);
-	glClear(GL_DEPTH_BUFFER_BIT);
-
-	glm::mat4 model = glm::mat4(1.0f);
-	this->simpleDepthShader->SetMat4("model", model);
-
-	this->sponza->Draw(*this->simpleDepthShader);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void RenderingSystem::ClearCurrentFrame()
 {
 	glViewport(0, 0, this->windowWidth, this->windowHeight);
@@ -749,7 +796,20 @@ void RenderingSystem::ClearCurrentFrame()
 
 void RenderingSystem::UpdateShadowMap()
 {
-	ConfigureShaderAndMatrices();
+	this->simpleDepthShader->Use();
+	this->simpleDepthShader->SetMat4("lightSpaceMatrix", GetLightSpaceMatrix());
+
+	glViewport(0, 0, this->windowWidth, this->windowHeight);
+	//glViewport(0, 0, 4096, 4096);
+	glBindFramebuffer(GL_FRAMEBUFFER, this->depthMapFBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	glm::mat4 model = glm::mat4(1.0f);
+	this->simpleDepthShader->SetMat4("model", model);
+
+	this->sponza->Draw(*this->simpleDepthShader);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RenderingSystem::RenderDebugDepthMap()
@@ -809,6 +869,7 @@ void RenderingSystem::RenderToHDRFramebuffer()
 	this->blinnPhong->SetFloat("pointLight.quadratic", this->pointLight->quadratic);
 	this->blinnPhong->SetFloat("shininess", this->shininess);
 	this->blinnPhong->SetMat4("model", glm::mat4(1.0f));
+	this->blinnPhong->SetInt("kernelSize", this->kernelSize);
 
 	// Draw model.
 	this->sponza->Draw(*this->blinnPhong);
@@ -949,21 +1010,21 @@ void RenderingSystem::RenderToQuad()
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void RenderingSystem::RenderToGBuffer()
+void RenderingSystem::RenderToGBuffer(Shader* shader)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, this->gBuffer);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Select shader.
-	this->blinnPhong2->Use();
+	shader->Use();
 
 	// Set scene uniforms.
-	this->blinnPhong2->SetCamera(this->camera, this->windowWidth, this->windowHeight);
-	this->blinnPhong2->SetMat4("lightSpaceMatrix", GetLightSpaceMatrix());
-	this->blinnPhong2->SetMat4("model", glm::mat4(1.0f));
+	shader->SetCamera(this->camera, this->windowWidth, this->windowHeight);
+	shader->SetMat4("lightSpaceMatrix", GetLightSpaceMatrix());
+	shader->SetMat4("model", glm::mat4(1.0f));
 
 	// Draw model.
-	this->sponza->Draw(*this->blinnPhong2);
+	this->sponza->Draw(*shader);
 
 	// Set sphere uniforms for ball player model.
 	this->lightShader->Use();
@@ -985,6 +1046,45 @@ void RenderingSystem::RenderToGBuffer()
 
 	// Bind default framebuffer and texture.
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void RenderingSystem::RenderDebugSSAOMap()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Select shader.
+	this->ssaoMapShader->Use();
+
+	// Load textures.
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, this->gPosition);
+	this->ssaoMapShader->SetInt("gPosition", 0);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, this->gNormal);
+	this->ssaoMapShader->SetInt("gNormal", 1);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, this->noiseTexture);
+	this->ssaoMapShader->SetInt("texNoise", 2);
+
+	// Camera uniforms.
+	this->ssaoMapShader->SetCamera(this->camera, this->windowWidth, this->windowHeight);
+
+	// Window uniforms.
+	this->ssaoMapShader->SetFloat("windowWidth", static_cast<float>(this->windowWidth));
+	this->ssaoMapShader->SetFloat("windowHeight", static_cast<float>(this->windowHeight));
+
+	// Kernel samples.
+	for (unsigned int i = 0; i < this->ssaoKernel.size(); i++)
+	{
+		std::string name = "samples[" + std::to_string(i) + "]";
+		this->ssaoMapShader->SetVec3(name, this->ssaoKernel[i]);
+	}
+
+	// Draw to full-screen quad.
+	RenderQuad();
+
+	// Unbind texture.
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -1010,8 +1110,15 @@ void RenderingSystem::Update()
 	// Use deferred rendering or forward rendering.
 	if (this->useGBuffer)
 	{
+		if (this->showDebugSSAOMap)
+		{
+			RenderToGBuffer(this->viewSpaceShader);
+
+			RenderDebugSSAOMap();
+			return;
+		}
 		// 2. Render scene to G-Buffer.
-		RenderToGBuffer();
+		RenderToGBuffer(this->blinnPhong2);
 
 		// 3. Render texure to full-screen quad.
 		RenderToQuad();

@@ -401,6 +401,7 @@
     <None Include="res\shaders\blinnPhong.fs" />
     <None Include="res\shaders\blinnPhong.vs" />
     <None Include="res\shaders\blinnPhong2.fs" />
+    <None Include="res\shaders\blinnPhong2.vs" />
     <None Include="res\shaders\blur.fs" />
     <None Include="res\shaders\blur.vs" />
     <None Include="res\shaders\collider.fs" />
@@ -436,6 +437,8 @@
     <None Include="res\shaders\simpleDepthShader.vs" />
     <None Include="res\shaders\skybox.fs" />
     <None Include="res\shaders\skybox.vs" />
+    <None Include="res\shaders\ssao.fs" />
+    <None Include="res\shaders\ssao.vs" />
     <None Include="res\shaders\standard.fs" />
     <None Include="res\shaders\standard.vs" />
     <None Include="res\shaders\text.fs" />

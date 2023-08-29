@@ -6,7 +6,9 @@ layout (location = 2) out vec4 gAlbedo;
 
 in vec2 texCoords;
 in vec3 normal;
+in vec3 viewNormal;
 in vec3 worldPos;
+in vec3 viewPos;
 in vec4 fragPosLightSpace;
 
 // Textures.
@@ -40,7 +42,7 @@ void main()
     vec3 norm = GetNormalFromMap();
     
     // Set geometry buffers.
-    gPosition = worldPos;
-    gNormal = norm;
+    gPosition = viewPos;
+    gNormal = viewNormal;
     gAlbedo = vec4(albedo, 1.0);
 }
